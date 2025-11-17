@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36408.4 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GA(GymAssistant)", "GA(GymAssistant)\GA(GymAssistant).csproj", "{F8C23EB8-88DC-48B0-AFF7-BE85D1F03E92}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F8C23EB8-88DC-48B0-AFF7-BE85D1F03E92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8C23EB8-88DC-48B0-AFF7-BE85D1F03E92}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8C23EB8-88DC-48B0-AFF7-BE85D1F03E92}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8C23EB8-88DC-48B0-AFF7-BE85D1F03E92}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A621DE96-CD7D-458A-820A-A0AD80AC28A1}
+	EndGlobalSection
+EndGlobal

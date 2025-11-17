@@ -1,0 +1,49 @@
+/* _content/GA(GymAssistant)/Views/Shared/_Layout.cshtml.rz.scp.css */
+/* Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
+for details on configuring this project to bundle and minify static web assets. */
+
+a.navbar-brand[b-mmtpbmp3ks] {
+  white-space: normal;
+  text-align: center;
+  word-break: break-all;
+}
+
+a[b-mmtpbmp3ks] {
+  color: #0077cc;
+}
+
+.btn-primary[b-mmtpbmp3ks] {
+  color: #fff;
+  background-color: #1b6ec2;
+  border-color: #1861ac;
+}
+
+.nav-pills .nav-link.active[b-mmtpbmp3ks], .nav-pills .show > .nav-link[b-mmtpbmp3ks] {
+  color: #fff;
+  background-color: #1b6ec2;
+  border-color: #1861ac;
+}
+
+.border-top[b-mmtpbmp3ks] {
+  border-top: 1px solid #e5e5e5;
+}
+.border-bottom[b-mmtpbmp3ks] {
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.box-shadow[b-mmtpbmp3ks] {
+  box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+}
+
+button.accept-policy[b-mmtpbmp3ks] {
+  font-size: 1rem;
+  line-height: inherit;
+}
+
+.footer[b-mmtpbmp3ks] {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  white-space: nowrap;
+  line-height: 60px;
+}

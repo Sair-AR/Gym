@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Moviendo el cuerrpito za za za\\GA(GymAssistant)\\GA(GymAssistant)\\GA(GymAssistant).csproj": {}
+    "C:\\Users\\USUARIO\\OneDrive\\Documentos\\GitHub\\Gym\\GA(GymAssistant)\\GA(GymAssistant).csproj": {}
   },
   "projects": {
-    "D:\\Moviendo el cuerrpito za za za\\GA(GymAssistant)\\GA(GymAssistant)\\GA(GymAssistant).csproj": {
+    "C:\\Users\\USUARIO\\OneDrive\\Documentos\\GitHub\\Gym\\GA(GymAssistant)\\GA(GymAssistant).csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Moviendo el cuerrpito za za za\\GA(GymAssistant)\\GA(GymAssistant)\\GA(GymAssistant).csproj",
+        "projectUniqueName": "C:\\Users\\USUARIO\\OneDrive\\Documentos\\GitHub\\Gym\\GA(GymAssistant)\\GA(GymAssistant).csproj",
         "projectName": "GA(GymAssistant)",
-        "projectPath": "D:\\Moviendo el cuerrpito za za za\\GA(GymAssistant)\\GA(GymAssistant)\\GA(GymAssistant).csproj",
-        "packagesPath": "C:\\Users\\ADM\\.nuget\\packages\\",
-        "outputPath": "D:\\Moviendo el cuerrpito za za za\\GA(GymAssistant)\\GA(GymAssistant)\\obj\\",
+        "projectPath": "C:\\Users\\USUARIO\\OneDrive\\Documentos\\GitHub\\Gym\\GA(GymAssistant)\\GA(GymAssistant).csproj",
+        "packagesPath": "C:\\Users\\USUARIO\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\USUARIO\\OneDrive\\Documentos\\GitHub\\Gym\\GA(GymAssistant)\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "D:\\Archivos de sistema\\Microsoft VS\\NuGetPackages"
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\ADM\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\USUARIO\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -26,6 +26,7 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -44,7 +45,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "9.0.200"
       },
       "frameworks": {
         "net8.0": {
@@ -68,7 +69,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

@@ -31,3 +31,38 @@ D:\Moviendo el cuerrpito za za za\GA(GymAssistant)\GA(GymAssistant)\obj\Debug\ne
 D:\Moviendo el cuerrpito za za za\GA(GymAssistant)\GA(GymAssistant)\obj\Debug\net8.0\GA(GymAssistant).pdb
 D:\Moviendo el cuerrpito za za za\GA(GymAssistant)\GA(GymAssistant)\obj\Debug\net8.0\GA(GymAssistant).genruntimeconfig.cache
 D:\Moviendo el cuerrpito za za za\GA(GymAssistant)\GA(GymAssistant)\obj\Debug\net8.0\ref\GA(GymAssistant).dll
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\bin\Debug\net8.0\appsettings.Development.json
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\bin\Debug\net8.0\appsettings.json
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\bin\Debug\net8.0\GA(GymAssistant).staticwebassets.runtime.json
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\bin\Debug\net8.0\GA(GymAssistant).staticwebassets.endpoints.json
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\bin\Debug\net8.0\GA(GymAssistant).exe
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\bin\Debug\net8.0\GA(GymAssistant).deps.json
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\bin\Debug\net8.0\GA(GymAssistant).runtimeconfig.json
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\bin\Debug\net8.0\GA(GymAssistant).dll
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\bin\Debug\net8.0\GA(GymAssistant).pdb
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\obj\Debug\net8.0\GA(GymAssistant).GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\obj\Debug\net8.0\GA(GymAssistant).AssemblyInfoInputs.cache
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\obj\Debug\net8.0\GA(GymAssistant).AssemblyInfo.cs
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\obj\Debug\net8.0\GA(GymAssistant).csproj.CoreCompileInputs.cache
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\obj\Debug\net8.0\GA(GymAssistant).MvcApplicationPartsAssemblyInfo.cache
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\obj\Debug\net8.0\GA(GymAssistant).RazorAssemblyInfo.cache
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\obj\Debug\net8.0\GA(GymAssistant).RazorAssemblyInfo.cs
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\obj\Debug\net8.0\GA(GymAssistant).sourcelink.json
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\obj\Debug\net8.0\scopedcss\Views\Shared\_Layout.cshtml.rz.scp.css
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\obj\Debug\net8.0\scopedcss\bundle\GA(GymAssistant).styles.css
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\obj\Debug\net8.0\scopedcss\projectbundle\GA(GymAssistant).bundle.scp.css
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\obj\Debug\net8.0\staticwebassets.build.json
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\obj\Debug\net8.0\staticwebassets.development.json
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\obj\Debug\net8.0\staticwebassets.build.endpoints.json
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\obj\Debug\net8.0\staticwebassets\msbuild.GA(GymAssistant).Microsoft.AspNetCore.StaticWebAssets.props
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\obj\Debug\net8.0\staticwebassets\msbuild.GA(GymAssistant).Microsoft.AspNetCore.StaticWebAssetEndpoints.props
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\obj\Debug\net8.0\staticwebassets\msbuild.build.GA(GymAssistant).props
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\obj\Debug\net8.0\staticwebassets\msbuild.buildMultiTargeting.GA(GymAssistant).props
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\obj\Debug\net8.0\staticwebassets\msbuild.buildTransitive.GA(GymAssistant).props
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\obj\Debug\net8.0\staticwebassets.pack.json
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\obj\Debug\net8.0\GA(GymAssistant).dll
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\obj\Debug\net8.0\refint\GA(GymAssistant).dll
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\obj\Debug\net8.0\GA(GymAssistant).pdb
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\obj\Debug\net8.0\GA(GymAssistant).genruntimeconfig.cache
+C:\Users\USUARIO\OneDrive\Documentos\GitHub\Gym\GA(GymAssistant)\obj\Debug\net8.0\ref\GA(GymAssistant).dll

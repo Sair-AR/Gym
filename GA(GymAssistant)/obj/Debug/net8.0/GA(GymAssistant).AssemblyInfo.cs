@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GA(GymAssistant)")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1833f38614072b18a7cd5672dcb09fb470778c97")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ab39ec217754fe67cf1326bf3f567f881524f61b")]
 [assembly: System.Reflection.AssemblyProductAttribute("GA(GymAssistant)")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GA(GymAssistant)")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

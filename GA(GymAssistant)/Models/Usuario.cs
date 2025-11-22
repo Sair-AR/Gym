@@ -22,18 +22,18 @@ namespace GA_GymAssistant_.Models
 
         public double? Altura { get; set; }
 
-        public string Nivel { get; set; } // Ej: Principiante, Intermedio
+        public string? Nivel { get; set; } // Ej: Principiante, Intermedio
 
-        public string Objetivo { get; set; } // Ej: Ganar músculo, Pérdida de peso
+        public string? Objetivo { get; set; } // Ej: Ganar músculo, Pérdida de peso
 
-        public string ZonaObjetivo { get; set; }
+        public string? ZonaObjetivo { get; set; }
 
-        public string Lesiones { get; set; }
+        public string? Lesiones { get; set; }
 
-        public string AvatarUrl { get; set; }
+        public string? AvatarUrl { get; set; }
 
-        public DateTime FechaRegistro { get; set; } = DateTime.Now; // DEFAULT GETDATE()
+        public DateTime? FechaRegistro { get; set; } = DateTime.Now; // DEFAULT GETDATE()
 
-        public string TipoUsuario { get; set; }
+        public string? TipoUsuario { get; set; }
     }
 }

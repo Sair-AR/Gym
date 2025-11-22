@@ -18,6 +18,8 @@ namespace GA_GymAssistant_.Controllers
             return View();
         }
 
+
+     
         public IActionResult Privacy()
         {
             return View();

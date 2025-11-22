@@ -22,10 +22,10 @@ namespace GA_GymAssistant_.Models
         [Required]
         public int Repeticiones { get; set; }
 
-        public string ParametrosIA { get; set; }
+        public string? ParametrosIA { get; set; }
 
         // Propiedades de navegación
-        public Rutina Rutina { get; set; }
-        public Ejercicio Ejercicio { get; set; }
+        public Rutina? Rutina { get; set; }
+        public Ejercicio? Ejercicio { get; set; }
     }
 }

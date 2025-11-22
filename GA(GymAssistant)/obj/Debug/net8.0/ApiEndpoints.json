@@ -1,1 +1,42 @@
-[]
+[
+  {
+    "ContainingType": "GA_GymAssistant.Controllers.DatosController",
+    "Method": "GetProfile",
+    "RelativePath": "api/Datos/perfil",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "GA_GymAssistant.Controllers.DatosController",
+    "Method": "GetProgressHistory",
+    "RelativePath": "api/Datos/progreso",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "GA_GymAssistant.Controllers.DatosController",
+    "Method": "GetLatestRoutine",
+    "RelativePath": "api/Datos/rutina",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "GA_GymAssistant.Controllers.DatosController",
+    "Method": "GenerateRoutine",
+    "RelativePath": "api/Datos/rutina/generar",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  }
+]

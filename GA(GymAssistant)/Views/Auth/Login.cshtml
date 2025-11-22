@@ -1,0 +1,221 @@
+﻿@{
+    Layout = null; // Desactiva el layout principal para tener una página limpia
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Assistant IA | Iniciar Sesión</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Iconos Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0F172A; /* Fondo Oscuro (Slate 900) */
+            color: #E2E8F0; /* Texto Claro (Slate 200) */
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-card {
+            background-color: #1E293B; /* Tarjeta (Slate 800) */
+            border: 1px solid #334155; /* Borde Sutil */
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+            transition: transform 0.2s;
+        }
+
+        .input-field {
+            background-color: #0F172A; /* Input oscuro */
+            border: 1px solid #334155;
+            color: #E2E8F0;
+            transition: border-color 0.2s;
+        }
+
+            .input-field:focus {
+                border-color: #6366F1; /* Índigo al enfocar */
+                outline: none;
+                box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+            }
+
+        .btn-primary {
+            background-color: #4F46E5; /* Índigo 600 */
+            color: white;
+            transition: all 0.2s;
+        }
+
+            .btn-primary:hover:not(:disabled) {
+                background-color: #4338CA; /* Índigo 700 */
+                transform: translateY(-1px);
+            }
+
+            .btn-primary:disabled {
+                opacity: 0.7;
+                cursor: not-allowed;
+            }
+
+        /* Animación para error */
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        @@keyframes shake {
+            0%, 100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-card" class="login-card p-8 sm:p-10 rounded-xl w-full max-w-md mx-4">
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-900/50 mb-4">
+                <i data-lucide="dumbbell" class="w-8 h-8 text-indigo-400"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-white mb-2">GymPass IA</h1>
+            <p class="text-slate-400 text-sm">Ingresa tus credenciales para continuar</p>
+        </div>
+
+        <form id="login-form" onsubmit="handleLogin(event)">
+            <div class="space-y-5">
+                <div>
+                    <label for="email" class="block text-sm font-medium mb-1.5 text-slate-300">Correo Electrónico</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="mail" class="w-5 h-5 text-slate-500"></i>
+                        </div>
+                        <input type="email" id="email" required
+                               class="input-field w-full pl-10 p-3 rounded-lg"
+                               placeholder="juan.perez@gympass.com">
+                    </div>
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-medium mb-1.5 text-slate-300">Contraseña</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="lock" class="w-5 h-5 text-slate-500"></i>
+                        </div>
+                        <input type="password" id="password" required
+                               class="input-field w-full pl-10 p-3 rounded-lg"
+                               placeholder="••••••••">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mensaje de Error (Oculto por defecto) -->
+            <div id="error-msg" class="hidden mt-4 p-3 bg-red-500/10 border border-red-500/50 rounded-lg flex items-center gap-2 text-red-200 text-sm">
+                <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i>
+                <span id="error-text">Error de autenticación</span>
+            </div>
+
+            <button id="btn-submit" type="submit" class="btn-primary w-full mt-8 py-3 rounded-xl font-semibold flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                <i data-lucide="log-in" class="w-5 h-5 mr-2"></i>
+                <span>Iniciar Sesión</span>
+            </button>
+        </form>
+
+        <div class="mt-8 text-center border-t border-slate-700 pt-6">
+            <a href="/" class="text-sm text-slate-500 hover:text-indigo-400 transition flex items-center justify-center gap-1">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al Inicio
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // ===================================================
+        // LÓGICA DE LOGIN
+        // ===================================================
+
+        async function handleLogin(event) {
+            event.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('btn-submit');
+            const errorDiv = document.getElementById('error-msg');
+            const errorText = document.getElementById('error-text');
+            const card = document.getElementById('login-card');
+
+            // Estado de carga
+            btn.disabled = true;
+            const originalBtnContent = btn.innerHTML;
+            btn.innerHTML = '<svg class="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Verificando...';
+            errorDiv.classList.add('hidden');
+
+            try {
+                // 1. Llamada al Backend (AuthController)
+                // Usamos la ruta definida en AuthController.cs
+                const response = await fetch('/api/Auth/validar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    // 2. Guardar sesión NO PERSISTENTE (sessionStorage)
+                    sessionStorage.setItem('isLoggedIn', 'true');
+                    sessionStorage.setItem('userId', data.userId);
+                    sessionStorage.setItem('userName', data.nombre);
+
+                    // 3. Redirigir al Dashboard
+                    btn.innerHTML = '<i data-lucide="check" class="w-5 h-5 mr-2"></i> ¡Éxito!';
+                    btn.classList.replace('bg-indigo-600', 'bg-green-600');
+
+                    setTimeout(() => {
+                        window.location.href = '/Home/Dashboard';
+                    }, 500);
+
+                } else {
+                    // Leer mensaje de error del servidor
+                    const errorMsg = await response.text();
+                    throw new Error(errorMsg || 'Credenciales incorrectas');
+                }
+
+            } catch (error) {
+                // Manejo de errores
+                // Eliminar comillas dobles que a veces devuelve el API en texto plano
+                errorText.textContent = error.message.replace(/"/g, '');
+                errorDiv.classList.remove('hidden');
+
+                // Efecto de vibración
+                card.classList.add('shake');
+                setTimeout(() => card.classList.remove('shake'), 500);
+
+                // Restaurar botón
+                btn.disabled = false;
+                btn.innerHTML = originalBtnContent;
+                // Reiniciar iconos Lucide en el contenido restaurado
+                lucide.createIcons();
+            }
+        }
+
+        // Verificación inicial al cargar
+        window.onload = function() {
+            lucide.createIcons();
+
+            // Si ya hay sesión en esta pestaña, ir directo al dashboard
+            if (sessionStorage.getItem('isLoggedIn') === 'true') {
+                 window.location.href = '/Home/Dashboard';
+            }
+        };
+    </script>
+</body>
+</html>

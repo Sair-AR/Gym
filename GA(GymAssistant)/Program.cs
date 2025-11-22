@@ -1,14 +1,14 @@
-using GA_GymAssistant.Data; // Importa tu contexto de datos
-using GA_GymAssistant.Services; // Importa tu servicio de IA
-using Microsoft.EntityFrameworkCore; // Necesario para AddDbContext y UseSqlServer
+﻿using GA_GymAssistant.Data;
+using GA_GymAssistant.Services;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // =========================================================
-// 1. CONFIGURACI�N DE CONEXI�N A LA BASE DE DATOS (DBContext)
+// 1. CONFIGURACIÓN DE CONEXIÓN A LA BASE DE DATOS (DBContext)
 // =========================================================
 
-// Obtener la cadena de conexi�n de appsettings.json
+// Obtener la cadena de conexión de appsettings.json
 var connectionString = builder.Configuration.GetConnectionString("GimpassDBConnection") ??
     throw new InvalidOperationException("Connection string 'GimpassDBConnection' not found.");
 
@@ -18,28 +18,43 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 
 // =========================================================
-// 2. REGISTRO DE SERVICIOS ADICIONALES (Controladores y Servicios de L�gica)
+// 2. REGISTRO DE SERVICIOS ADICIONALES Y CORRECCIONES CRÍTICAS
 // =========================================================
 
-// A�adir servicios para controladores y vistas
+// Añadir servicios para controladores y vistas
 builder.Services.AddControllersWithViews();
 
-// Registrar el servicio de IA para poder inyectarlo en DatosController
-// Usamos AddScoped, lo cual es apropiado para servicios que manejan l�gica de negocio por solicitud.
-builder.Services.AddScoped<IAGymService>();
+// 💡 CORRECCIÓN CRÍTICA: Usar AddHttpClient para registrar el servicio de IA.
+// Esto resuelve el error 'Unable to resolve service for type System.Net.Http.HttpClient'
+// al inyectar automáticamente el cliente HTTP necesario para llamar a Gemini.
+builder.Services.AddHttpClient<IAGymService>();
 
+
+// 💡 AÑADIDO: Configuración de CORS.
+// Esto es esencial para que el frontend (index.html) pueda hacer peticiones 
+// al backend (localhost:5000) sin ser bloqueado por el navegador.
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "AllowFrontend",
+        policy =>
+        {
+            // Permitir cualquier origen (necesario para el entorno de desarrollo y pruebas locales)
+            policy.AllowAnyOrigin()
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+});
 
 var app = builder.Build();
 
 // =========================================================
-// 3. CONFIGURACI�N DEL PIPELINE HTTP (Middleware)
+// 3. CONFIGURACIÓN DEL PIPELINE HTTP (Middleware)
 // =========================================================
 
-// Configure the HTTP request pipeline.
+// Configuración para el pipeline de peticiones HTTP.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -47,6 +62,9 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+// 💡 APLICAR LA POLÍTICA DE CORS AQUÍ (debe ir después de UseRouting y antes de UseAuthorization)
+app.UseCors("AllowFrontend");
 
 app.UseAuthorization();
 

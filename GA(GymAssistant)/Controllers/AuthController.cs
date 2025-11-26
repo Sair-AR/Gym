@@ -14,14 +14,10 @@ namespace GA_GymAssistant.Controllers
             _context = context;
         }
 
-        // ==========================================
-        // 1. MOSTRAR LA VISTA (GET: /Auth/Login)
-        // ==========================================
         [HttpGet]
         public IActionResult Login()
         {
-            // Si ya hay sesión (lógica opcional), redirigir al dashboard
-            return View(); // Busca Views/Auth/Login.cshtml
+            return View();
         }
 
         // ==========================================
@@ -35,23 +31,41 @@ namespace GA_GymAssistant.Controllers
                 return BadRequest("Faltan datos.");
             }
 
-            // Buscar usuario en la BD
+            // 1. Buscar usuario en la BD
             var user = await _context.Usuarios
                 .FirstOrDefaultAsync(u => u.Email == request.Email);
 
             if (user == null) return Unauthorized("Usuario no encontrado.");
 
-            // Verificar contraseña (en producción usar hash)
+            // =======================================================
+            // 2. NUEVA VALIDACIÓN: VERIFICAR ESTADO
+            // =======================================================
+            // Si Estado es false (0), denegar acceso
+            if (!user.Estado)
+            {
+                return Unauthorized("Tu cuenta está inactiva. Contacta al soporte.");
+            }
+            // =======================================================
+
+            // 3. Verificar contraseña (en producción usar hash)
             if (user.PasswordHash != request.Password)
                 return Unauthorized("Contraseña incorrecta.");
 
-            // Login exitoso
+            // 4. Login exitoso
             return Ok(new
             {
                 message = "Bienvenido",
                 userId = user.IdUsuario,
-                nombre = user.Nombre
+                nombre = user.Nombre,
+                rol = user.TipoUsuario // Útil si necesitas saber si es Admin en el front
             });
         }
+    }
+
+    // Clase auxiliar para recibir el JSON (si no la tienes en otro lado)
+    public class LoginRequest
+    {
+        public string Email { get; set; }
+        public string Password { get; set; }
     }
 }

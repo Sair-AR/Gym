@@ -16,9 +16,9 @@ namespace GA_GymAssistant.Controllers
 
         public async Task<IActionResult> Index()
         {
+
             return View(await _context.Usuarios.ToListAsync());
         }
-
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null || _context.Usuarios == null)
@@ -47,7 +47,8 @@ namespace GA_GymAssistant.Controllers
         {
             if (ModelState.IsValid)
             {
-                usuario.FechaRegistro = DateTime.Now; 
+                usuario.FechaRegistro = DateTime.Now;
+                usuario.Estado = true;
                 if (string.IsNullOrEmpty(usuario.PasswordHash))
                     usuario.PasswordHash = "user"; 
                 _context.Add(usuario);
@@ -122,13 +123,16 @@ namespace GA_GymAssistant.Controllers
             {
                 return Problem("Entity set 'ApplicationDbContext.Usuarios' is null.");
             }
+
             var usuario = await _context.Usuarios.FindAsync(id);
+
             if (usuario != null)
             {
-                _context.Usuarios.Remove(usuario);
+                usuario.Estado = false;
+                _context.Update(usuario); 
+                await _context.SaveChangesAsync();
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 

@@ -16,6 +16,7 @@ namespace GA_GymAssistant_.Models
         [Required]
         public string PasswordHash { get; set; }
 
+        public bool Estado { get; set; }
         public int? Edad { get; set; }
 
         public double? Peso { get; set; } // Puede ser nulo, se actualiza en el Historial

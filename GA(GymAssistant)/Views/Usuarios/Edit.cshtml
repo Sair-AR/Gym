@@ -14,7 +14,9 @@
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         <input type="hidden" asp-for="IdUsuario" />
         <input type="hidden" asp-for="FechaRegistro" />
-        <input type="hidden" asp-for="PasswordHash" /> <div class="row">
+        <input type="hidden" asp-for="PasswordHash" /> 
+        
+        <div class="row">
             <div class="col-md-6 mb-4">
                 <div class="card shadow-sm border-0 h-100">
                     <div class="card-header bg-warning text-dark fw-bold">
@@ -33,6 +35,14 @@
                             <span asp-validation-for="Email" class="text-danger"></span>
                         </div>
 
+                        <div class="form-floating mb-3">
+                            <select asp-for="Estado" class="form-select border-success">
+                                <option value="true">Activo (Habilitado)</option>
+                                <option value="false">Inactivo (Deshabilitado)</option>
+                            </select>
+                            <label asp-for="Estado">Estado de la Cuenta</label>
+                            <span class="text-muted small ms-1">Selecciona 'Activo' para restaurar un usuario borrado.</span>
+                        </div>
                         <div class="row g-2">
                             <div class="col-md-6">
                                 <div class="form-floating mb-3">

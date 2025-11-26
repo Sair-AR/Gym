@@ -41,7 +41,9 @@ CREATE TABLE Usuarios (
     AvatarUrl NVARCHAR(300),
     FechaRegistro DATETIME DEFAULT GETDATE(),
     TipoUsuario Nvarchar(50) -- Nuevo usuario con 'Admin'
-);
+); 
+ALTER TABLE Usuarios
+ADD Estado BIT DEFAULT 1 NOT NULL;
 
 CREATE TABLE HistorialProgreso (
     IdProgreso INT PRIMARY KEY IDENTITY(1,1),

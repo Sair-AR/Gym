@@ -1,0 +1,983 @@
+﻿@using Microsoft.Extensions.Configuration
+
+@inject IConfiguration Configuration
+
+
+
+@{
+
+    ViewData["Title"] = "GymPass IA Assistant Dashboard";
+
+    Layout = null; // O elimina esta línea si quieres usar tu _Layout.cshtml compartido
+
+
+
+    // Intentamos leer la API Key desde appsettings.json. 
+
+    // Asegúrate de tener en tu appsettings: "Gemini": { "ApiKey": "TU_CLAVE" }
+
+    var geminiApiKey = Configuration["Gemini:ApiKey"] ?? ""; 
+
+}
+
+
+
+<!DOCTYPE html>
+
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>@ViewData["Title"]</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+
+        /* Estilos personalizados para el tema oscuro y la fuente */
+
+        /* NOTA: En Razor usamos @@ para escapar el arroba */
+
+        @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+        
+
+        body {
+
+            font-family: 'Inter', sans-serif;
+
+            background-color: #0F172A; /* Slate 900 */
+
+            color: #E2E8F0; /* Slate 200 */
+
+            min-height: 100vh;
+
+        }
+
+        .card {
+
+            background-color: #1E293B; /* Slate 800 */
+
+            border: 1px solid #334155; /* Slate 700 */
+
+            transition: transform 0.2s;
+
+        }
+
+        .card:hover {
+
+            transform: translateY(-2px);
+
+        }
+
+        .btn-primary {
+
+            background-color: #4F46E5; /* Indigo 600 */
+
+            color: white;
+
+            transition: background-color 0.2s, transform 0.1s;
+
+        }
+
+        .btn-primary:hover {
+
+            background-color: #4338CA; /* Indigo 700 */
+
+            transform: scale(1.02);
+
+        }
+
+        .btn-secondary {
+
+            background-color: #334155; /* Slate 700 */
+
+            color: #94A3B8; /* Slate 400 */
+
+            transition: background-color 0.2s;
+
+        }
+
+        .btn-secondary:hover {
+
+            background-color: #475569; /* Slate 600 */
+
+        }
+
+        .exercise-item {
+
+            border-left: 4px solid #4F46E5;
+
+        }
+
+    </style>
+
+</head>
+
+<body class="p-4 sm:p-8">
+
+
+
+    <div id="modal-container" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center hidden">
+
+        <div id="modal-content" class="bg-white p-6 rounded-lg shadow-xl w-11/12 max-w-lg">
+
+            <h3 id="modal-title" class="text-xl font-bold text-gray-900 mb-4">Sugerencia de la IA</h3>
+
+            <p id="modal-body" class="text-gray-700"></p>
+
+            <div class="mt-6 text-right">
+
+                <button onclick="closeModal()" class="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none">Cerrar</button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <div class="max-w-6xl mx-auto">
+
+        <header class="mb-8 text-center sm:text-left">
+
+            <h1 class="text-4xl font-extrabold text-white">🏋️ Gym Assistant IA</h1>
+
+            <p class="text-indigo-400 mt-1">Dashboard de Rutinas Generadas por Google Gemini</p>
+
+        </header>
+
+
+
+        <div class="card p-6 rounded-xl shadow-lg mb-8 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+
+            <p class="text-lg font-medium">Genera una nueva rutina personalizada basada en tus datos de perfil.</p>
+
+            <button id="generate-btn" onclick="generateRoutine()" class="btn-primary px-6 py-3 rounded-xl font-semibold flex items-center">
+
+                <i data-lucide="zap" class="w-5 h-5 mr-2"></i>
+
+                <span>Generar Nueva Rutina con IA</span>
+
+            </button>
+
+        </div>
+
+
+
+        <div id="loading" class="hidden text-center p-8">
+
+            <svg class="animate-spin h-8 w-8 text-indigo-400 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+
+            </svg>
+
+            <p class="mt-3 text-indigo-400 font-medium" id="loading-text">Generando rutina con Gemini...</p>
+
+        </div>
+
+        
+
+        <div id="routine-container" class="space-y-8">
+
+            <div id="routine-header" class="card p-6 rounded-xl shadow-lg">
+
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-4 mb-4 border-slate-700">
+
+                    <h2 class="text-2xl font-bold text-indigo-400" id="routine-base"></h2>
+
+                    <span class="text-sm text-slate-400 mt-2 sm:mt-0" id="routine-date"></span>
+
+                </div>
+
+                <p class="text-slate-300 mb-4" id="routine-ia-summary"></p>
+
+
+
+                <div class="bg-slate-700 p-4 rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0">
+
+                    <div class="flex items-center">
+
+                        <i data-lucide="lightbulb" class="w-5 h-5 text-yellow-400 mr-2 flex-shrink-0"></i>
+
+                        <p class="text-sm italic text-slate-200" id="routine-notes"></p>
+
+                    </div>
+
+                    <button onclick="readNotes()" class="btn-secondary px-4 py-2 rounded-lg text-sm font-semibold flex items-center w-full md:w-auto justify-center">
+
+                        <i data-lucide="volume-2" class="w-4 h-4 mr-1"></i>
+
+                        <span id="tts-btn-text">✨ Leer Notas</span>
+
+                    </button>
+
+                </div>
+
+                <audio id="tts-audio" class="hidden" controls></audio>
+
+            </div>
+
+            
+
+            <div class="card p-6 rounded-xl shadow-lg">
+
+                <h3 class="text-xl font-bold border-b pb-3 mb-4 border-slate-700">Detalle de Ejercicios</h3>
+
+                <div id="exercises-list" class="space-y-4">
+
+                    </div>
+
+            </div>
+
+        </div>
+
+
+
+        <div id="error-message" class="hidden text-center p-8 bg-red-900/50 border border-red-700 rounded-xl mt-8">
+
+            <p class="text-red-300 font-semibold">Error al cargar la rutina. Asegúrate de que tu backend esté corriendo y la base de datos tenga datos.</p>
+
+        </div>
+
+
+
+    </div>
+
+
+
+    <script>
+
+        // =========================================================================================
+
+        // CONFIGURACIÓN Y UTILIDADES GLOBALES
+
+        // =========================================================================================
+
+
+
+        const BASE_API_URL = 'http://localhost:5000/api/Datos'; // Asegúrate que este puerto coincida con tu backend de C#
+
+        const LOADING_TEXTS = ["Generando rutina con Gemini...", "Optimizando plan para tu nivel...", "Estructurando ejercicios...", "Casi listo!"];
+
+
+
+        // URL para llamar al modelo de texto
+
+        const GEMINI_FLASH_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+
+        
+
+        // URL para llamar al modelo de TTS (Lector de notas)
+
+        const GEMINI_TTS_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent';
+
+        
+
+        // INYECCIÓN DE CLAVE DESDE RAZOR (Lado del Servidor) -> JS (Lado del Cliente)
+
+        // Nota de Seguridad: En producción, es mejor hacer estas llamadas desde tu Controller C# para no exponer la Key.
+
+        const API_KEY = "@geminiApiKey"; 
+
+
+
+        // Función auxiliar para mostrar modal
+
+        function showModal(title, body) {
+
+            document.getElementById('modal-title').innerText = title;
+
+            document.getElementById('modal-body').innerText = body;
+
+            document.getElementById('modal-container').classList.remove('hidden');
+
+            // Inicializar iconos de Lucide dentro del modal si es necesario
+
+            lucide.createIcons(); 
+
+        }
+
+
+
+        function closeModal() {
+
+            document.getElementById('modal-container').classList.add('hidden');
+
+        }
+
+
+
+        // =========================================================================================
+
+        // LLAMADA 1: Obtener la última rutina (GET)
+
+        // =========================================================================================
+
+
+
+        async function fetchLatestRoutine() {
+
+            try {
+
+                const response = await fetch(`${BASE_API_URL}/rutina`);
+
+                if (!response.ok) {
+
+                    if (response.status === 404) {
+
+                        // Es normal si no hay rutinas generadas aún
+
+                        showRoutineDetails(null);
+
+                        return;
+
+                    }
+
+                    throw new Error(`Error HTTP: ${response.status}`);
+
+                }
+
+                const data = await response.json();
+
+                showRoutineDetails(data);
+
+            } catch (error) {
+
+                console.error('Error al obtener la rutina:', error);
+
+                document.getElementById('error-message').classList.remove('hidden');
+
+            } finally {
+
+                document.getElementById('loading').classList.add('hidden');
+
+            }
+
+        }
+
+
+
+        function showRoutineDetails(data) {
+
+            const container = document.getElementById('routine-container');
+
+            const errorMessage = document.getElementById('error-message');
+
+            const listContainer = document.getElementById('exercises-list');
+
+            listContainer.innerHTML = ''; // Limpiar lista anterior
+
+
+
+            if (!data) {
+
+                container.classList.add('hidden');
+
+                errorMessage.classList.remove('hidden');
+
+                errorMessage.querySelector('p').innerText = 'No se encontró ninguna rutina. ¡Genera una nueva para empezar!';
+
+                return;
+
+            }
+
+
+
+            // Mostrar la rutina
+
+            container.classList.remove('hidden');
+
+            errorMessage.classList.add('hidden');
+
+
+
+            document.getElementById('routine-base').innerText = data.rutinaBase || 'Rutina Semanal Personalizada';
+
+            document.getElementById('routine-date').innerText = `Fecha: ${data.fecha}`;
+
+            document.getElementById('routine-ia-summary').innerText = data.rutinaIA || 'Descripción detallada de la rutina.';
+
+            document.getElementById('routine-notes').innerText = data.notasIA || 'Sin notas de la IA.';
+
+
+
+            // Inyectar Ejercicios
+
+            data.ejercicios.forEach(ej => {
+
+                const item = document.createElement('div');
+
+                item.className = 'exercise-item card p-4 rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center';
+
+                item.innerHTML = `
+
+                    <div class="flex-grow">
+
+                        <p class="text-lg font-semibold text-white">${ej.nombreEjercicio}</p>
+
+                        <p class="text-sm text-slate-400">Series: <span class="text-indigo-300">${ej.series}</span> | Repeticiones: <span class="text-indigo-300">${ej.repeticiones}</span></p>
+
+                        <p class="text-xs text-slate-500 mt-1">${ej.parametrosIA}</p>
+
+                    </div>
+
+                    <button onclick="getExerciseSuggestion('${ej.nombreEjercicio}', '${data.nivel}', '${data.objetivo}')" 
+
+                            class="btn-secondary mt-3 md:mt-0 px-3 py-1 text-sm rounded-lg flex items-center">
+
+                        <i data-lucide="refresh-cw" class="w-4 h-4 mr-1"></i>
+
+                        <span>Sugerir Alternativa ✨</span>
+
+                    </button>
+
+                `;
+
+                listContainer.appendChild(item);
+
+            });
+
+            // Inicializar iconos de Lucide
+
+            lucide.createIcons();
+
+        }
+
+
+
+        // =========================================================================================
+
+        // LLAMADA 2: Generar Nueva Rutina (POST)
+
+        // =========================================================================================
+
+
+
+        async function generateRoutine() {
+
+            const generateBtn = document.getElementById('generate-btn');
+
+            const loadingDiv = document.getElementById('loading');
+
+            const loadingText = document.getElementById('loading-text');
+
+            
+
+            generateBtn.disabled = true;
+
+            generateBtn.innerHTML = '<svg class="animate-spin h-5 w-5 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Generando...';
+
+            loadingDiv.classList.remove('hidden');
+
+            
+
+            // Ciclo de mensajes de carga
+
+            let interval = setInterval(() => {
+
+                const currentText = loadingText.innerText;
+
+                const nextIndex = (LOADING_TEXTS.indexOf(currentText) + 1) % LOADING_TEXTS.length;
+
+                loadingText.innerText = LOADING_TEXTS[nextIndex];
+
+            }, 1500);
+
+
+
+            try {
+
+                const response = await fetch(`${BASE_API_URL}/rutina/generar`, {
+
+                    method: 'POST',
+
+                    headers: { 'Content-Type': 'application/json' }
+
+                });
+
+
+
+                if (!response.ok) {
+
+                    const errorDetails = await response.json();
+
+                    throw new Error(`Error en el servidor: ${response.status} - ${errorDetails.message || 'Error desconocido'}`);
+
+                }
+
+
+
+                // Esperar 1 segundo para simular la finalización de la carga y luego recargar
+
+                setTimeout(fetchLatestRoutine, 1000);
+
+
+
+            } catch (error) {
+
+                console.error('Error al generar la rutina:', error);
+
+                showModal("Error de Generación", `No se pudo generar la rutina. Verifica que el backend esté ejecutándose. Detalle: ${error.message}`);
+
+                document.getElementById('loading').classList.add('hidden');
+
+            } finally {
+
+                clearInterval(interval);
+
+                generateBtn.disabled = false;
+
+                generateBtn.innerHTML = '<i data-lucide="zap" class="w-5 h-5 mr-2"></i><span>Generar Nueva Rutina con IA</span>';
+
+                lucide.createIcons(); // Recargar iconos
+
+            }
+
+        }
+
+
+
+        // =========================================================================================
+
+        // LLAMADA 3: SUGERENCIA DE REEMPLAZO (Gemini Flash - Texto)
+
+        // =========================================================================================
+
+
+
+        async function getExerciseSuggestion(exerciseName, userLevel, userGoal) {
+
+            
+
+            if (!API_KEY) {
+
+                showModal("Error de Configuración", "No se encontró la API Key de Gemini. Verifica tu appsettings.json.");
+
+                return;
+
+            }
+
+
+
+            const loadingTitle = `Buscando alternativa para ${exerciseName}...`;
+
+            showModal(loadingTitle, 'La IA está analizando tu perfil para ofrecerte la mejor opción. Por favor, espera...');
+
+            document.getElementById('modal-content').querySelector('#modal-body').classList.add('animate-pulse');
+
+
+
+            const systemPrompt = `Eres un asistente de gimnasio amigable y experto. Tu única tarea es proponer UN SOLO ejercicio alternativo y conciso (máximo 2 frases) para el ejercicio dado, respetando el nivel del usuario y su objetivo. No incluyas series, repeticiones ni el nombre de la rutina. Sé directo.`;
+
+            const userQuery = `El usuario es Nivel: ${userLevel} con Objetivo: ${userGoal}. Necesita una alternativa para el ejercicio: ${exerciseName}. Dame la mejor opción.`;
+
+            
+
+            const payload = {
+
+                contents: [{ parts: [{ text: userQuery }] }],
+
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+
+            };
+
+            
+
+            const apiUrl = `${GEMINI_FLASH_ENDPOINT}?key=${API_KEY}`;
+
+            
+
+            // Función con reintento y backoff exponencial (máximo 3 reintentos)
+
+            const MAX_RETRIES = 3;
+
+            for (let i = 0; i < MAX_RETRIES; i++) {
+
+                try {
+
+                    const response = await fetch(apiUrl, {
+
+                        method: 'POST',
+
+                        headers: { 'Content-Type': 'application/json' },
+
+                        body: JSON.stringify(payload)
+
+                    });
+
+
+
+                    if (!response.ok) {
+
+                        if (i === MAX_RETRIES - 1) throw new Error(`Error ${response.status}: Fallo en la llamada a la API de Gemini.`);
+
+                        await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000)); // Backoff
+
+                        continue;
+
+                    }
+
+
+
+                    const result = await response.json();
+
+                    const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                    
+
+                    document.getElementById('modal-content').querySelector('#modal-body').classList.remove('animate-pulse');
+
+                    showModal(`✅ Alternativa para ${exerciseName}`, text || "La IA no pudo sugerir una alternativa en este momento.");
+
+                    return;
+
+
+
+                } catch (error) {
+
+                    console.error("Error en getExerciseSuggestion:", error);
+
+                    document.getElementById('modal-content').querySelector('#modal-body').classList.remove('animate-pulse');
+
+                    showModal("Error Crítico", `No se pudo contactar con el servicio de IA. Verifica la clave API en el código. Detalle: ${error.message}`);
+
+                    return;
+
+                }
+
+            }
+
+        }
+
+        
+
+        // =========================================================================================
+
+        // LLAMADA 4: LECTOR DE NOTAS (Gemini TTS - Audio)
+
+        // =========================================================================================
+
+        
+
+        // Utilidades para convertir PCM a WAV (necesario para la reproducción)
+
+        function base64ToArrayBuffer(base64) {
+
+            const binary_string = window.atob(base64);
+
+            const len = binary_string.length;
+
+            const bytes = new Uint8Array(len);
+
+            for (let i = 0; i < len; i++) {
+
+                bytes[i] = binary_string.charCodeAt(i);
+
+            }
+
+            return bytes.buffer;
+
+        }
+
+
+
+        function pcmToWav(pcm16, sampleRate) {
+
+            const buffer = new ArrayBuffer(44 + pcm16.length * 2);
+
+            const view = new DataView(buffer);
+
+            let offset = 0;
+
+
+
+            function writeString(str) {
+
+                for (let i = 0; i < str.length; i++) {
+
+                    view.setUint8(offset++, str.charCodeAt(i));
+
+                }
+
+            }
+
+            function writeUint32(val) { view.setUint32(offset, val, true); offset += 4; }
+
+            function writeUint16(val) { view.setUint16(offset, val, true); offset += 2; }
+
+
+
+            // RIFF chunk
+
+            writeString('RIFF');
+
+            writeUint32(36 + pcm16.length * 2); // Chunk size
+
+            writeString('WAVE');
+
+
+
+            // fmt chunk
+
+            writeString('fmt ');
+
+            writeUint32(16); // Sub-chunk size
+
+            writeUint16(1);  // Audio format (1 for PCM)
+
+            writeUint16(1);  // Number of channels
+
+            writeUint32(sampleRate);
+
+            writeUint32(sampleRate * 2); // Byte rate (SampleRate * Channels * 2 bytes/sample)
+
+            writeUint16(2);  // Block align (Channels * 2 bytes/sample)
+
+            writeUint16(16); // Bits per sample
+
+
+
+            // data chunk
+
+            writeString('data');
+
+            writeUint32(pcm16.length * 2); // Data size
+
+
+
+            // Escribir los datos PCM16
+
+            for (let i = 0; i < pcm16.length; i++) {
+
+                view.setInt16(offset, pcm16[i], true);
+
+                offset += 2;
+
+            }
+
+
+
+            return new Blob([view], { type: 'audio/wav' });
+
+        }
+
+
+
+
+
+        async function readNotes() {
+
+            if (!API_KEY) {
+
+                showModal("Error de Configuración", "No se encontró la API Key de Gemini. Verifica tu appsettings.json.");
+
+                return;
+
+            }
+
+
+
+            const notesElement = document.getElementById('routine-notes');
+
+            const notes = notesElement.innerText.trim();
+
+            const audio = document.getElementById('tts-audio');
+
+            const ttsBtnText = document.getElementById('tts-btn-text');
+
+            
+
+            if (notes === 'Sin notas de la IA.') {
+
+                showModal("Sin Contenido", "No hay notas disponibles para leer.");
+
+                return;
+
+            }
+
+
+
+            // Si ya hay audio y está visible, alternamos la reproducción.
+
+            if (!audio.paused || audio.src) {
+
+                if (audio.paused) {
+
+                    audio.play();
+
+                    ttsBtnText.innerText = '⏸️ Pausar';
+
+                } else {
+
+                    audio.pause();
+
+                    ttsBtnText.innerText = '▶️ Reanudar';
+
+                }
+
+                return;
+
+            }
+
+
+
+            ttsBtnText.innerHTML = '<svg class="animate-spin h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Cargando...';
+
+
+
+
+
+            const payload = {
+
+                contents: [{
+
+                    parts: [{ text: `Di con tono profesional e informativo: ${notes}` }]
+
+                }],
+
+                generationConfig: {
+
+                    responseModalities: ["AUDIO"],
+
+                    speechConfig: {
+
+                        voiceConfig: {
+
+                            prebuiltVoiceConfig: { voiceName: "Kore" } // Una voz clara y firme
+
+                        }
+
+                    }
+
+                },
+
+            };
+
+
+
+            const apiUrl = `${GEMINI_TTS_ENDPOINT}?key=${API_KEY}`;
+
+
+
+            try {
+
+                const response = await fetch(apiUrl, {
+
+                    method: 'POST',
+
+                    headers: { 'Content-Type': 'application/json' },
+
+                    body: JSON.stringify(payload)
+
+                });
+
+
+
+                if (!response.ok) throw new Error(`Error ${response.status}: Fallo en la API de TTS.`);
+
+
+
+                const result = await response.json();
+
+                const part = result?.candidates?.[0]?.content?.parts?.[0];
+
+                const audioData = part?.inlineData?.data;
+
+                const mimeType = part?.inlineData?.mimeType;
+
+
+
+                if (audioData && mimeType && mimeType.startsWith("audio/L16")) {
+
+                    // El sample rate está incrustado en el mimeType: audio/L16;rate=24000
+
+                    const match = mimeType.match(/rate=(\d+)/);
+
+                    const sampleRate = match ? parseInt(match[1], 10) : 24000;
+
+
+
+                    const pcmData = base64ToArrayBuffer(audioData);
+
+                    // API retorna signed PCM16 audio data.
+
+                    const pcm16 = new Int16Array(pcmData);
+
+                    const wavBlob = pcmToWav(pcm16, sampleRate);
+
+                    const audioUrl = URL.createObjectURL(wavBlob);
+
+
+
+                    audio.src = audioUrl;
+
+                    audio.classList.remove('hidden');
+
+                    audio.play();
+
+                    ttsBtnText.innerText = '⏸️ Pausar';
+
+
+
+                    // Limpiar URL después de la reproducción
+
+                    audio.onended = () => {
+
+                        URL.revokeObjectURL(audioUrl);
+
+                        audio.src = '';
+
+                        audio.classList.add('hidden');
+
+                        ttsBtnText.innerText = '✨ Leer Notas';
+
+                    };
+
+                } else {
+
+                      throw new Error('Respuesta de audio inválida o incompleta.');
+
+                }
+
+            } catch (error) {
+
+                console.error("Error en readNotes:", error);
+
+                ttsBtnText.innerText = '❌ Error';
+
+                showModal("Error TTS", `No se pudo generar el audio. Verifica la clave API. Detalle: ${error.message}`);
+
+            }
+
+        }
+
+
+
+
+        window.onload = function() {
+
+            lucide.createIcons();
+
+            fetchLatestRoutine();
+
+        };
+
+
+
+    </script>
+
+</body>
+
+</html>
+

@@ -1,0 +1,110 @@
+﻿@model IEnumerable<GA_GymAssistant_.Models.Usuario>
+
+@{
+    ViewData["Title"] = "Gestión de Usuarios";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">Directorio de Usuarios</h2>
+            <p class="text-muted mb-0">Administra el acceso y perfiles de los miembros del gimnasio.</p>
+        </div>
+        <a asp-action="Create" class="btn btn-primary shadow-sm">
+            <i class="bi bi-person-plus-fill"></i> + Nuevo Usuario
+        </a>
+    </div>
+
+    <div class="card shadow border-0 rounded-3">
+        <div class="card-header bg-white py-3 border-bottom">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h5 class="mb-0 text-secondary">Listado Registrado</h5>
+                </div>
+                <div class="col-auto">
+                    <input type="text" class="form-control form-control-sm" placeholder="Buscar usuario...">
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light text-secondary">
+                        <tr>
+                            <th class="ps-4">Usuario</th>
+                            <th>Datos Físicos</th>
+                            <th>Nivel / Objetivo</th>
+                            <th>Tipo Usuario</th>
+                            <th>Fecha Registro</th>
+                            <th class="text-end pe-4">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                             style="width: 45px; height: 45px; overflow: hidden;">
+                                            @if (!string.IsNullOrEmpty(item.AvatarUrl))
+                                            {
+                                                <img src="@item.AvatarUrl" alt="Avatar" class="w-100 h-100" style="object-fit: cover;">
+                                            }
+                                            else
+                                            {
+                                                <span class="fw-bold text-primary">@item.Nombre.Substring(0,1)</span>
+                                            }
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold text-dark">@item.Nombre</div>
+                                            <div class="small text-muted">@item.Email</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="small text-muted">Edad: @(item.Edad.HasValue ? item.Edad + " años" : "N/A")</div>
+                                    <div class="small text-muted">Peso: @(item.Peso.HasValue ? item.Peso + " kg" : "N/A")</div>
+                                </td>
+                                <td>
+                                    <span class="d-block text-dark">@item.Objetivo</span>
+                                    <small class="text-muted">@item.Nivel</small>
+                                </td>
+                                <td>
+                                    @if (item.TipoUsuario == "Admin")
+                                    {
+                                        <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill">Administrador</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill">Cliente</span>
+                                    }
+                                </td>
+                                <td>
+                                    @(item.FechaRegistro.HasValue ? item.FechaRegistro.Value.ToShortDateString() : "-")
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Edit" asp-route-id="@item.IdUsuario" class="btn btn-sm btn-outline-secondary" title="Editar">
+                                            Editar
+                                        </a>
+                                        <a asp-action="Details" asp-route-id="@item.IdUsuario" class="btn btn-sm btn-outline-info" title="Ver Detalles">
+                                            Ver
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.IdUsuario" class="btn btn-sm btn-outline-danger" title="Eliminar">
+                                            X
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer bg-white border-top py-3">
+            <small class="text-muted">Mostrando @Model.Count() usuarios</small>
+        </div>
+    </div>
+</div>

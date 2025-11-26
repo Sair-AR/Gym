@@ -1,0 +1,123 @@
+﻿@model GA_GymAssistant_.Models.Usuario
+
+@{
+    ViewData["Title"] = "Editar Usuario";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-dark">Editar Perfil</h2>
+        <a asp-action="Index" class="btn btn-outline-secondary">Cancelar y Volver</a>
+    </div>
+
+    <form asp-action="Edit">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="IdUsuario" />
+        <input type="hidden" asp-for="FechaRegistro" />
+        <input type="hidden" asp-for="PasswordHash" /> <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-warning text-dark fw-bold">
+                        1. Información de Cuenta
+                    </div>
+                    <div class="card-body">
+                        <div class="form-floating mb-3">
+                            <input asp-for="Nombre" class="form-control" placeholder="Nombre completo" />
+                            <label asp-for="Nombre">Nombre Completo</label>
+                            <span asp-validation-for="Nombre" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="Email" class="form-control" placeholder="name@example.com" />
+                            <label asp-for="Email">Correo Electrónico</label>
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <select asp-for="TipoUsuario" class="form-select">
+                                        <option value="Cliente">Cliente</option>
+                                        <option value="Admin">Administrador</option>
+                                    </select>
+                                    <label asp-for="TipoUsuario">Rol</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input asp-for="AvatarUrl" class="form-control" placeholder="URL Imagen" />
+                                    <label asp-for="AvatarUrl">URL Avatar</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-info text-white fw-bold">
+                        2. Actualizar Físico & Metas
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2 mb-3">
+                            <div class="col-4">
+                                <div class="form-floating">
+                                    <input asp-for="Edad" class="form-control" placeholder="Edad" />
+                                    <label asp-for="Edad">Edad</label>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="form-floating">
+                                    <input asp-for="Peso" class="form-control" placeholder="Peso" />
+                                    <label asp-for="Peso">Peso (kg)</label>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="form-floating">
+                                    <input asp-for="Altura" class="form-control" placeholder="Altura" />
+                                    <label asp-for="Altura">Altura (m)</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <select asp-for="Nivel" class="form-select">
+                                <option value="Principiante">Principiante</option>
+                                <option value="Intermedio">Intermedio</option>
+                                <option value="Avanzado">Avanzado</option>
+                            </select>
+                            <label asp-for="Nivel">Nivel de Experiencia</label>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <select asp-for="Objetivo" class="form-select">
+                                <option value="Pérdida de Peso">Pérdida de Peso</option>
+                                <option value="Ganar Músculo">Ganar Músculo</option>
+                                <option value="Mantenimiento">Mantenimiento</option>
+                                <option value="Resistencia">Resistencia</option>
+                            </select>
+                            <label asp-for="Objetivo">Objetivo Principal</label>
+                        </div>
+                        
+                        <div class="form-floating mb-3">
+                             <input asp-for="ZonaObjetivo" class="form-control" placeholder="Ej: Abdomen" />
+                             <label asp-for="ZonaObjetivo">Zona a Priorizar</label>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <textarea asp-for="Lesiones" class="form-control" placeholder="Detalle lesiones" style="height: 100px"></textarea>
+                            <label asp-for="Lesiones">Lesiones o Limitaciones</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-12 text-end">
+                <button type="submit" class="btn btn-warning btn-lg px-5 shadow text-dark fw-bold">Guardar Cambios</button>
+            </div>
+        </div>
+    </form>
+</div>

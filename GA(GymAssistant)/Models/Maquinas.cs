@@ -11,7 +11,5 @@ namespace GA_GymAssistant_.Models
         public string Nombre { get; set; }
 
         public string Descripcion { get; set; }
-
-        public string Zona { get; set; }
     }
 }

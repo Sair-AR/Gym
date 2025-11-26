@@ -1,0 +1,36 @@
+﻿@model GA_GymAssistant_.Models.Usuario
+
+@{
+    ViewData["Title"] = "Eliminar Usuario";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger shadow">
+                <div class="card-header bg-danger text-white text-center py-3">
+                    <h4 class="mb-0">⚠ Confirmar Eliminación</h4>
+                </div>
+                <div class="card-body text-center p-5">
+                    <h5 class="card-title text-muted mb-4">¿Estás seguro que deseas eliminar a este usuario?</h5>
+                    
+                    <div class="mb-4">
+                        <h2 class="fw-bold">@Model.Nombre</h2>
+                        <p class="text-muted">@Model.Email</p>
+                        <span class="badge bg-light text-dark border">Rol: @Model.TipoUsuario</span>
+                    </div>
+
+                    <div class="alert alert-warning text-start" role="alert">
+                        <small><strong>Advertencia:</strong> Esta acción eliminará también el historial de progreso y las rutinas asociadas a este usuario. Esta acción no se puede deshacer.</small>
+                    </div>
+
+                    <form asp-action="Delete" class="d-grid gap-2">
+                        <input type="hidden" asp-for="IdUsuario" />
+                        <button type="submit" class="btn btn-danger btn-lg">Sí, Eliminar Definitivamente</button>
+                        <a asp-action="Index" class="btn btn-light btn-lg border">Cancelar</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

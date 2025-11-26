@@ -1,0 +1,41 @@
+﻿@model IEnumerable<GA_GymAssistant_.Models.Maquinas>
+
+@{ ViewData["Title"] = "Inventario de Máquinas"; }
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">Catálogo de Máquinas</h2>
+            <p class="text-muted mb-0">Gestión del equipamiento disponible en el gimnasio.</p>
+        </div>
+        <a asp-action="Create" class="btn btn-primary shadow-sm">
+            <i class="bi bi-plus-lg"></i> + Nueva Máquina
+        </a>
+    </div>
+
+    <div class="card shadow border-0 rounded-3">
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-secondary">
+                    <tr>
+                        <th class="ps-4">Nombre del Equipo</th>
+                        <th>Descripción Técnica</th>
+                        <th class="text-end pe-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model) {
+                    <tr>
+                        <td class="ps-4 fw-bold text-dark">@item.Nombre</td>
+                        <td class="text-muted">@item.Descripcion</td>
+                        <td class="text-end pe-4">
+                            <a asp-action="Edit" asp-route-id="@item.IdMaquina" class="btn btn-sm btn-outline-warning">Editar</a>
+                            <a asp-action="Delete" asp-route-id="@item.IdMaquina" class="btn btn-sm btn-outline-danger">Eliminar</a>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

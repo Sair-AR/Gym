@@ -1,0 +1,31 @@
+﻿@model GA_GymAssistant_.Models.Maquinas
+@{ ViewData["Title"] = "Nueva Máquina"; }
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white fw-bold py-3">
+                    Registrar Nuevo Equipo
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create">
+                        <div class="form-floating mb-3">
+                            <input asp-for="Nombre" class="form-control" placeholder="Nombre" />
+                            <label asp-for="Nombre">Nombre de la Máquina</label>
+                            <span asp-validation-for="Nombre" class="text-danger"></span>
+                        </div>
+                        <div class="form-floating mb-4">
+                            <textarea asp-for="Descripcion" class="form-control" placeholder="Desc" style="height: 100px"></textarea>
+                            <label asp-for="Descripcion">Descripción y Uso</label>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">Guardar Máquina</button>
+                            <a asp-action="Index" class="btn btn-light border">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

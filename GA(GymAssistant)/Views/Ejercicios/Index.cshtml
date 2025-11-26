@@ -1,0 +1,53 @@
+﻿@model IEnumerable<GA_GymAssistant_.Models.Ejercicio>
+@{ ViewData["Title"] = "Biblioteca de Ejercicios"; }
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">Biblioteca de Ejercicios</h2>
+            <p class="text-muted mb-0">Base de datos de movimientos y rutinas disponibles.</p>
+        </div>
+        <a asp-action="Create" class="btn btn-success shadow-sm">
+            <i class="bi bi-plus-circle"></i> + Nuevo Ejercicio
+        </a>
+    </div>
+
+    <div class="card shadow border-0 rounded-3">
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-secondary">
+                    <tr>
+                        <th class="ps-4">Ejercicio</th>
+                        <th>Zona Muscular</th>
+                        <th>Nivel</th>
+                        <th>Equipamiento</th>
+                        <th class="text-end pe-4">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model) {
+                    <tr>
+                        <td class="ps-4 fw-bold text-dark">@item.Nombre</td>
+                        <td><span class="badge bg-secondary bg-opacity-10 text-dark border">@item.Zona</span></td>
+                        <td>@item.Nivel</td>
+                        <td>
+                            @if (item.RequiereMaquina == true && item.Maquina != null)
+                            {
+                                <span class="text-primary"><i class="bi bi-gear-fill"></i> @item.Maquina.Nombre</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted"><i class="bi bi-person-arms-up"></i> Peso Corporal / Libre</span>
+                            }
+                        </td>
+                        <td class="text-end pe-4">
+                            <a asp-action="Edit" asp-route-id="@item.IdEjercicio" class="btn btn-sm btn-outline-warning">Editar</a>
+                            <a asp-action="Delete" asp-route-id="@item.IdEjercicio" class="btn btn-sm btn-outline-danger">Eliminar</a>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

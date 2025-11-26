@@ -1,0 +1,66 @@
+﻿@model GA_GymAssistant_.Models.Ejercicio
+@{ ViewData["Title"] = "Nuevo Ejercicio"; }
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-success text-white fw-bold py-3">
+                    Configurar Nuevo Ejercicio
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Create">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-floating">
+                                    <input asp-for="Nombre" class="form-control" placeholder="Nombre" />
+                                    <label asp-for="Nombre">Nombre del Ejercicio</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-floating">
+                                    <input asp-for="Zona" class="form-control" placeholder="Zona" />
+                                    <label asp-for="Zona">Zona Muscular (Ej: Pectoral)</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="form-floating">
+                                    <select asp-for="Nivel" class="form-select">
+                                        <option value="Principiante">Principiante</option>
+                                        <option value="Intermedio">Intermedio</option>
+                                        <option value="Avanzado">Avanzado</option>
+                                    </select>
+                                    <label asp-for="Nivel">Dificultad</label>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-3 d-flex align-items-center">
+                                <div class="form-check form-switch ms-2">
+                                    <input class="form-check-input" type="checkbox" id="checkMaquina" asp-for="RequiereMaquina">
+                                    <label class="form-check-label fw-bold" for="checkMaquina">¿Requiere Máquina?</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <div class="form-floating">
+                                    <select asp-for="IdMaquina" class="form-select" asp-items="ViewBag.IdMaquina">
+                                        <option value="">-- Ninguna --</option>
+                                    </select>
+                                    <label asp-for="IdMaquina">Seleccionar Máquina</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-3">
+                            <button type="submit" class="btn btn-success btn-lg">Guardar Ejercicio</button>
+                            <a asp-action="Index" class="btn btn-light border">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

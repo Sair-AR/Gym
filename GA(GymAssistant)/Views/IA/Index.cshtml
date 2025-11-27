@@ -1,0 +1,42 @@
+﻿@model IEnumerable<GA_GymAssistant_.Models.IAConsulta>
+@{ ViewData["Title"] = "Entrenador IA"; }
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card bg-dark text-white shadow h-100">
+                <div class="card-body">
+                    <h3>🤖 Entrenador Virtual</h3>
+                    <p class="small text-white-50">Powered by Google Gemini</p>
+                    <hr />
+                    <form asp-action="Consultar" method="post">
+                        <div class="mb-3">
+                            <label class="form-label">¿En qué puedo ayudarte hoy?</label>
+                            <textarea name="pregunta" class="form-control" rows="5" placeholder="Ej: Me duele la espalda baja, ¿qué ejercicios evito?" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 fw-bold">Enviar Consulta</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <h4 class="mb-3">Tus últimas consultas</h4>
+            @foreach (var item in Model)
+            {
+                <div class="card mb-3 shadow-sm border-0">
+                    <div class="card-body">
+                        <h6 class="text-primary fw-bold">Tú:</h6>
+                        <p class="mb-2">@item.Pregunta</p>
+                        
+                        <div class="bg-light p-3 rounded border-start border-4 border-success">
+                            <h6 class="text-success fw-bold">Gemini:</h6>
+                            <p class="mb-0" style="white-space: pre-line">@item.Respuesta</p>
+                        </div>
+                        <small class="text-muted d-block text-end mt-1">@item.Fecha</small>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

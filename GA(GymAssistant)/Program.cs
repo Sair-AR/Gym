@@ -1,11 +1,13 @@
 ﻿using GA_GymAssistant.Data;
-
 using Microsoft.EntityFrameworkCore;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("GimpassDBConnection")
     ?? throw new InvalidOperationException("Connection string 'GimpassDBConnection' not found.");
 
+builder.Services.AddHttpClient<GA_GymAssistant.Services.IAGymService>();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 builder.Services.AddControllersWithViews();

@@ -1,108 +1,129 @@
-﻿
+﻿using System.Text;
 using System.Text.Json;
-using System.Text;
-using Microsoft.Extensions.Configuration;
-using System.Net.Http;
+using System.Text.Json.Nodes;
 using GA_GymAssistant_.Models;
 
 namespace GA_GymAssistant.Services
 {
     public class IAGymService
     {
+        string apiKeyDirecta = "AIzaSyDQkzOGEg93AKwLAadTPA5ugtAzhpNYJLs";
+        string modelo = "gemini-1.5-flash";
         private readonly HttpClient _httpClient;
-        private readonly string _geminiApiKey;
-        // Usamos el modelo Flash por su velocidad y eficiencia en tareas estructuradas
-        private const string GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+        private readonly string  _apiKey;
 
-        // Inyección de HttpClient (desde Program.cs) e IConfiguration (para la clave API)
+        // El "Prompt del Sistema" define la personalidad de tu IA
+        private const string PROMPT_SISTEMA = @"
+            Eres 'GymPass Trainer', un entrenador personal experto, motivador y directo.
+            Tu objetivo es ayudar a los usuarios a mejorar su salud física.
+            REGLAS:
+            1. Responde de forma breve (máximo 1 o 2 párrafos).
+            2. Ten en cuenta SIEMPRE las lesiones del usuario si las menciona el contexto.
+            3. Si te preguntan algo fuera de fitness/salud, responde amablemente que solo hablas de entrenamiento.
+        ";
+
         public IAGymService(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
-            // Lee la clave API de la sección "Gemini:ApiKey" en appsettings.json
-            _geminiApiKey = configuration["Gemini:ApiKey"] ?? throw new InvalidOperationException("Gemini API Key not configured.");
+            // Busca la clave en tu appsettings.json
+            _apiKey = configuration["Gemini:ApiKey"];
         }
 
-        /// <summary>
-        /// Genera una rutina de ejercicios llamando a la API de Google Gemini.
-        /// </summary>
-        public async Task<string> GenerateRoutineFromAI(Usuario user, List<Ejercicio> availableExercises)
+        public async Task<string> ObtenerRespuesta(string preguntaUsuario, string contextoUsuario)
         {
-            // 1. Crear el System Instruction (Reglas para la IA)
-            string systemInstruction = @"
-                Eres un asistente de entrenamiento experto. Tu única tarea es generar una rutina semanal de ejercicios
-                en formato JSON ESTRICTO. La salida debe ser SOLO el objeto JSON que cumpla con el siguiente schema:
-                {
-                    ""rutina_base"": ""[string]"",
-                    ""rutina_ia"": ""[string]"",
-                    ""notas"": ""[string]"",
-                    ""ejercicios_detalle"": [
-                        { ""id_ejercicio"": [int], ""series"": [int], ""repeticiones"": [int], ""parametros_ia"": ""[string: Ej. Peso sugerido o tiempo de descanso]"" }
-                    ]
-                }
-                Los valores 'id_ejercicio' DEBEN ser tomados EXCLUSIVAMENTE de la lista de ejercicios disponibles proporcionada en el mensaje del usuario. 
-                Asegúrate de que la rutina siga el Objetivo, Nivel y Lesiones del usuario.
+           
+            var url = $"https://generativelanguage.googleapis.com/v1beta/models/{modelo}:generateContent?key={apiKeyDirecta}";
+
+            var promptCompleto = $@"
+                {PROMPT_SISTEMA}
+                CONTEXTO DEL USUARIO: {contextoUsuario}
+                PREGUNTA: {preguntaUsuario}
             ";
 
-            // 2. Crear el User Message (Datos y Contexto)
-            StringBuilder userMessageBuilder = new StringBuilder();
-            userMessageBuilder.AppendLine($"Usuario: {user.Nombre}, Peso: {user.Peso}kg, Altura: {user.Altura}m.");
-            userMessageBuilder.AppendLine($"Objetivo: {user.Objetivo}");
-            userMessageBuilder.AppendLine($"Nivel: {user.Nivel}");
-            userMessageBuilder.AppendLine($"Lesiones/Restricciones: {user.Lesiones}");
-            userMessageBuilder.AppendLine("Ejercicios disponibles (ID: Nombre | Zona):");
-
-            foreach (var exercise in availableExercises)
-            {
-                userMessageBuilder.AppendLine($"- ID {exercise.IdEjercicio}: {exercise.Nombre} | Zona: {exercise.Zona} | Requiere Máquina: {exercise.RequiereMaquina}");
-            }
-            userMessageBuilder.AppendLine("Genera la rutina semanal en el JSON estricto.");
-
-            string userMessage = userMessageBuilder.ToString();
-
-            // 3. Crear el Cuerpo de la Solicitud (Request Body)
             var requestBody = new
             {
-                contents = new[]
-                {
-                    new
-                    {
-                        role = "user",
-                        parts = new[] { new { text = userMessage } }
-                    }
-                },
-                config = new
-                {
-                    systemInstruction = systemInstruction,
-                    // ESTO ES CLAVE: Pide la respuesta en formato JSON
-                    responseMimeType = "application/json"
-                }
+                contents = new[] { new { parts = new[] { new { text = promptCompleto } } } }
             };
 
-            // 4. Enviar la Solicitud HTTP a Gemini
-            string jsonPayload = JsonSerializer.Serialize(requestBody);
+            var jsonContent = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
 
-            // La clave API se envía en la URL como parámetro 'key'
-            using var request = new HttpRequestMessage(HttpMethod.Post, $"{GEMINI_ENDPOINT}?key={_geminiApiKey}");
-            request.Content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
+            try
+            {
+                var response = await _httpClient.PostAsync(url, jsonContent);
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadAsStringAsync();
+                    var jsonNode = JsonNode.Parse(result);
+                    // Navegamos por el JSON de respuesta de Google
+                    return jsonNode?["candidates"]?[0]?["content"]?["parts"]?[0]?["text"]?.ToString()
+                           ?? "La IA no devolvió texto.";
+                }
+                return $"Error de conexión con IA: {response.StatusCode}";
+            }
+            catch (Exception ex)
+            {
+                return $"Error técnico: {ex.Message}";
+            }
+        }
+        // ... (código anterior de la clase) ...
 
-            var response = await _httpClient.SendAsync(request);
-            response.EnsureSuccessStatusCode(); // Lanza excepción si hay error HTTP
+        public async Task<string> GenerateRoutineFromAI(Usuario usuario, List<Ejercicio> ejerciciosDisponibles, string comentariosAdicionales = "")
+        {
+            var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent?key={_apiKey}";
 
-            string responseContent = await response.Content.ReadAsStringAsync();
+            // PASO CLAVE: Convertir la lista de objetos a un STRING legible para la IA
+            // Esto creará un texto tipo:
+            // - Press de Banca (Pecho)
+            // - Sentadilla (Piernas)
+            var listadoEjerciciosTexto = string.Join("\n",
+                ejerciciosDisponibles.Select(e => $"- {e.Nombre} (Zona: {e.Zona}, Nivel: {e.Nivel})"));
 
-            // 5. Extraer el JSON de la respuesta de Gemini
-            // Gemini envuelve el JSON que pedimos dentro de su propia estructura JSON.
-            using JsonDocument doc = JsonDocument.Parse(responseContent);
+            var promptRutina = $@"
+        Actúa como un entrenador personal experto. Genera una rutina para este usuario:
+        
+        PERFIL:
+        - Nombre: {usuario.Nombre}
+        - Objetivo: {usuario.Objetivo}
+        - Nivel: {usuario.Nivel}
+        - Lesiones: {usuario.Lesiones}
+        
+        PREFERENCIAS EXTRA: {comentariosAdicionales}
 
-            // Navegación para obtener el JSON de rutina que está dentro del campo 'text'
-            var textElement = doc.RootElement
-                                 .GetProperty("candidates")[0]
-                                 .GetProperty("content")
-                                 .GetProperty("parts")[0]
-                                 .GetProperty("text");
+        INSTRUCCIÓN IMPORTANTE:
+        La rutina DEBE crearse basándose PRINCIPALMENTE en la siguiente lista de ejercicios disponibles en nuestro gimnasio.
+        Si necesitas agregar un ejercicio muy común que no esté en la lista, puedes hacerlo, pero prioriza estos:
 
-            // Devuelve la cadena JSON limpia que será deserializada por el controlador.
-            return textElement.GetString() ?? throw new Exception("Gemini returned empty routine content.");
+        LISTA DE EJERCICIOS DISPONIBLES:
+        {listadoEjerciciosTexto}
+
+        FORMATO DE RESPUESTA:
+        Día X: [Grupo Muscular]
+        - Ejercicio: [Nombre] | Series: [X] | Reps: [X]
+    ";
+
+            var requestBody = new
+            {
+                contents = new[] { new { parts = new[] { new { text = promptRutina } } } }
+            };
+
+            var jsonContent = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
+
+            try
+            {
+                var response = await _httpClient.PostAsync(url, jsonContent);
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadAsStringAsync();
+                    var jsonNode = JsonNode.Parse(result);
+                    return jsonNode?["candidates"]?[0]?["content"]?["parts"]?[0]?["text"]?.ToString()
+                           ?? "La IA no generó respuesta.";
+                }
+                return "Error en la API de IA.";
+            }
+            catch (Exception ex)
+            {
+                return $"Error: {ex.Message}";
+            }
         }
     }
 }

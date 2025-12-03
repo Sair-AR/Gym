@@ -1,42 +1,198 @@
 ﻿@model IEnumerable<GA_GymAssistant_.Models.IAConsulta>
-@{ ViewData["Title"] = "Entrenador IA"; }
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
 
-<div class="container py-4">
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card bg-dark text-white shadow h-100">
-                <div class="card-body">
-                    <h3>🤖 Entrenador Virtual</h3>
-                    <p class="small text-white-50">Powered by Google Gemini</p>
-                    <hr />
-                    <form asp-action="Consultar" method="post">
+@{
+    ViewData["Title"] = "Entrenador IA";
+    Layout = null; // Para asegurar que este sea el archivo completo y autocontenido
+
+    // Se mantiene la inyección de configuración, aunque el formulario POST se gestiona en C#
+    var geminiApiKey = Configuration["Gemini:ApiKey"] ?? "";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+
+        /* Estilos generales */
+                @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+                body {
+                        font-family: 'Inter', sans-serif;
+                        background-color: #0F172A; /* Slate 900 */
+                        color: #E2E8F0; /* Slate 200 */
+                        min-height: 100vh;
+
+        }
+
+                .card {
+                        background-color: #1E293B; /* Slate 800 */
+                        border: 1px solid #334155; /* Slate 700 */
+                        transition: transform 0.2s, box-shadow 0.2s;
+                        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+
+        }
+
+                    .card:hover {
+                            transform: translateY(-2px);
+                            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -4px rgba(0, 0, 0, 0.15);
+
+        }
+
+                .btn-primary {
+                        background-color: #4F46E5; /* Indigo 600 */
+                        color: white;
+                        transition: background-color 0.2s, transform 0.1s;
+
+        }
+
+                    .btn-primary:hover {
+                            background-color: #4338CA; /* Indigo 700 */
+                            transform: scale(1.005);
+
+        }
+
+                .gemini-response {
+                        background-color: #1A222F; /* Darker than card for contrast */
+                        border-left: 4px solid #10B981; /* Emerald 500 */
+
+        }
+
+                .form-control {
+                        background-color: #334155; /* Slate 700 */
+                        border: 1px solid #475569; /* Slate 600 */
+                        color: #E2E8F0;
+                        padding: 0.75rem;
+                        border-radius: 0.5rem;
+
+        }
+
+                    .form-control::placeholder {
+                            color: #94A3B8; /* Slate 400 */
+
+        }
+
+                    .form-control:focus {
+                            outline: none;
+                            border-color: #4F46E5; /* Indigo 600 */
+                            box-shadow: 0 0 0 2px #1E293B, 0 0 0 4px #4F46E5;
+
+        }
+
+        /* Estilo para el botón de logout (Indigo 600 con un color de fondo diferente para destacar) */
+        .btn-logout {
+            background-color: #EF4444; /* Rojo 500 */
+            color: white;
+            transition: background-color 0.2s;
+        }
+
+            .btn-logout:hover {
+                background-color: #DC2626; /* Rojo 600 */
+            }
+
+
+    </style>
+</head>
+<body class="p-4 sm:p-8">
+
+    <div class="max-w-7xl mx-auto">
+
+        <header class="mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="text-center sm:text-left">
+                <h1 class="text-4xl font-extrabold text-white flex items-center justify-center sm:justify-start">
+                    <i data-lucide="dumbbell" class="w-8 h-8 mr-3 text-indigo-400"></i>
+                    Entrenador IA
+                </h1>
+                <p class="text-indigo-400 mt-1">Chat de Consultas con Google Gemini</p>
+            </div>
+
+            <form asp-controller="Auth" asp-action="Logout" method="post" class="m-0">
+                <button type="submit" class="btn-logout px-4 py-2 rounded-lg font-medium flex items-center shadow-lg">
+                    <i data-lucide="log-out" class="w-5 h-5 mr-2"></i>
+                    Cerrar Sesión
+                </button>
+            </form>
+        </header>
+
+
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+
+            <div class="md:col-span-4">
+                <div class="card p-6 rounded-xl shadow-xl h-full">
+                    <h3 class="text-2xl font-bold text-indigo-400 flex items-center">
+                        <i data-lucide="message-circle-question" class="w-6 h-6 mr-2"></i>
+                        Consulta
+                    </h3>
+                    <p class="text-sm text-slate-400 mt-1 mb-4">Powered by Google Gemini</p>
+
+                    <form asp-action="Consultar" method="post" class="space-y-4">
                         <div class="mb-3">
-                            <label class="form-label">¿En qué puedo ayudarte hoy?</label>
-                            <textarea name="pregunta" class="form-control" rows="5" placeholder="Ej: Me duele la espalda baja, ¿qué ejercicios evito?" required></textarea>
+                            <label class="block text-slate-300 font-medium mb-2">¿En qué puedo ayudarte hoy?</label>
+                            <textarea name="pregunta" class="form-control w-full resize-none" rows="5" placeholder="Ej: Me duele la espalda baja, ¿qué ejercicios evito?" required></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100 fw-bold">Enviar Consulta</button>
+                        <button type="submit" class="btn-primary w-full px-6 py-3 rounded-xl font-semibold flex items-center justify-center">
+                            <i data-lucide="send" class="w-5 h-5 mr-2"></i>
+                            Enviar Consulta
+                        </button>
                     </form>
                 </div>
             </div>
-        </div>
 
-        <div class="col-md-8">
-            <h4 class="mb-3">Tus últimas consultas</h4>
-            @foreach (var item in Model)
-            {
-                <div class="card mb-3 shadow-sm border-0">
-                    <div class="card-body">
-                        <h6 class="text-primary fw-bold">Tú:</h6>
-                        <p class="mb-2">@item.Pregunta</p>
-                        
-                        <div class="bg-light p-3 rounded border-start border-4 border-success">
-                            <h6 class="text-success fw-bold">Gemini:</h6>
-                            <p class="mb-0" style="white-space: pre-line">@item.Respuesta</p>
-                        </div>
-                        <small class="text-muted d-block text-end mt-1">@item.Fecha</small>
+            <div class="md:col-span-8">
+                <h4 class="text-2xl font-bold mb-4 text-white">
+                    <i data-lucide="history" class="w-6 h-6 mr-2 inline-block"></i>
+                    Tus últimas consultas
+                </h4>
+
+                @if (Model != null && Model.Any())
+                {
+                    <div class="space-y-4">
+                        @foreach (var item in Model)
+                        {
+                            <div class="card p-5 rounded-xl border-indigo-500/30">
+
+                                <div class="mb-3">
+                                    <p class="text-indigo-300 font-bold mb-1 flex items-center">
+                                        <i data-lucide="user" class="w-4 h-4 mr-2"></i>
+                                        Tú:
+                                    </p>
+                                    <p class="text-slate-200">@item.Pregunta</p>
+                                </div>
+
+                                <div class="gemini-response p-4 rounded-lg">
+                                    <p class="text-emerald-400 font-bold mb-2 flex items-center">
+                                        <i data-lucide="zap" class="w-4 h-4 mr-2"></i>
+                                        Gemini:
+                                    </p>
+                                    <div class="text-slate-300" style="white-space: pre-line">@item.Respuesta</div>
+                                </div>
+
+                                <small class="text-slate-500 d-block text-right mt-3">@item.Fecha</small>
+                            </div>
+                        }
                     </div>
-                </div>
-            }
+                }
+                else
+                {
+                    <div class="bg-slate-800 p-8 rounded-xl text-center border border-slate-700">
+                        <p class="text-slate-400">Aún no tienes consultas. ¡Usa el formulario para empezar tu chat con el Entrenador IA!</p>
+                    </div>
+                }
+            </div>
         </div>
     </div>
-</div>
+
+    <script>
+        // Inicializar iconos de Lucide al cargar la página
+        window.onload = function() {
+            lucide.createIcons();
+        };
+    </script>
+</body>
+</html>

@@ -1,6 +1,4 @@
 ﻿-- =======================================================================
--- SCRIPT DE CREACIÓN E INSERCIÓN DE BASE DE DATOS - PROYECTO GIMPASS (MEMBRESÍAS ELIMINADAS)
--- =======================================================================
 
 -- 1. CREACIÓN DE LA BASE DE DATOS
 CREATE DATABASE GYMPASS
@@ -25,7 +23,7 @@ CREATE TABLE Ejercicios (
     IdMaquina INT NULL,
     FOREIGN KEY (IdMaquina) REFERENCES Maquinas (IdMaquina)
 );
-
+SELECT * FROM Usuarios
 CREATE TABLE Usuarios (
     IdUsuario INT PRIMARY KEY IDENTITY(1,1),
     Nombre NVARCHAR(100) NOT NULL,

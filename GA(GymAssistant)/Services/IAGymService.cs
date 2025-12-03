@@ -14,7 +14,7 @@ namespace GA_GymAssistant.Services
         private const string MODELO = "gemini-2.5-flash";
 
         // ⚠️ PEGA TU CLAVE AQUÍ SI NO QUIERES USAR APPSETTINGS (Pero cuidado al compartir el código)
-        private const string API_KEY_RESPALDO = "AIzaSyDQkzOGEg93AKwLAadTPA5ugtAzhpNYJLs";
+        private const string API_KEY_RESPALDO = "AIzaSyBuS9LKePcEcD8QVSrtyIRFZfR5RmowJrA";
 
         public IAGymService(HttpClient httpClient, IConfiguration configuration)
         {

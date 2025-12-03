@@ -1,11 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using GA_GymAssistant.Data;
-using GA_GymAssistant_.Models;
+using GA_GymAssistant.Models; // Asegúrate de que IAConsulta y Usuario están aquí
 using GA_GymAssistant.Services;
+using Microsoft.AspNetCore.Authorization; // Necesario para [Authorize]
+using System.Security.Claims;
+using GA_GymAssistant_.Models; // Necesario para ClaimTypes
 
 namespace GA_GymAssistant.Controllers
 {
+    // Aplicamos [Authorize] a nivel de controlador para proteger todas las acciones de la IA
+    [Authorize]
     public class IAController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -17,11 +22,24 @@ namespace GA_GymAssistant.Controllers
             _iaService = iaService;
         }
 
+        // Método auxiliar para obtener el ID del usuario logueado
+        private int GetUserId()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            // Ya que el controlador está protegido con [Authorize], 
+            // este claim debería existir y ser válido.
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int idUsuario))
+            {
+                return idUsuario;
+            }
+            // Si falla, retorna 0 o lanza una excepción (aunque [Authorize] debería prevenir esto)
+            throw new UnauthorizedAccessException("ID de usuario no encontrado en la sesión.");
+        }
+
         public async Task<IActionResult> Index()
         {
-            // ⚠️ SIMULACIÓN: Asumimos que el usuario logueado es el ID 1.
-            // (Más adelante implementaremos Login real)
-            int idUsuario = 1;
+            // OBTENEMOS EL ID REAL del usuario logueado
+            int idUsuario = GetUserId();
 
             var historial = await _context.IAConsultas
                 .Where(c => c.IdUsuario == idUsuario)
@@ -37,22 +55,24 @@ namespace GA_GymAssistant.Controllers
         {
             if (string.IsNullOrWhiteSpace(pregunta)) return RedirectToAction("Index");
 
-            int idUsuario = 1; // ID Simulado
+            // OBTENEMOS EL ID REAL del usuario logueado
+            int idUsuario = GetUserId();
 
-            // 1. Buscamos al usuario para saber sus lesiones, peso, etc.
+            // 1. Buscamos al usuario para obtener su perfil real
             var usuario = await _context.Usuarios.FindAsync(idUsuario);
 
-            // 2. Preparamos el contexto para la IA
-            string contexto = "Usuario Anónimo";
+            // 2. Preparamos el contexto para la IA con datos reales
+            string contexto = "Usuario Anónimo"; // Fallback, pero ya no debería ser Anónimo
             if (usuario != null)
             {
+                // Aquí estamos pasando los datos del usuario logueado a la IA
                 contexto = $"Nombre: {usuario.Nombre}, Objetivo: {usuario.Objetivo}, Lesiones: {usuario.Lesiones}, Nivel: {usuario.Nivel}";
             }
 
             // 3. Llamamos a Gemini
             string respuestaIA = await _iaService.ObtenerRespuesta(pregunta, contexto);
 
-            // 4. Guardamos en la Base de Datos
+            // 4. Guardamos en la Base de Datos con el ID de usuario real
             var consulta = new IAConsulta
             {
                 IdUsuario = idUsuario,
@@ -63,6 +83,9 @@ namespace GA_GymAssistant.Controllers
 
             _context.Add(consulta);
             await _context.SaveChangesAsync();
+
+            // Puedes usar TempData o ViewBag para mostrar la respuesta inmediatamente
+            TempData["RespuestaIA"] = respuestaIA;
 
             return RedirectToAction("Index");
         }

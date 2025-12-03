@@ -180,7 +180,7 @@
                     btn.classList.replace('bg-indigo-600', 'bg-green-600');
 
                     setTimeout(() => {
-                        window.location.href = '/Home/Dashboard';
+                        window.location.href = '/IA/Index';
                     }, 500);
 
                 } else {
@@ -211,10 +211,7 @@
         window.onload = function() {
             lucide.createIcons();
 
-            // Si ya hay sesión en esta pestaña, ir directo al dashboard
-            if (sessionStorage.getItem('isLoggedIn') === 'true') {
-                 window.location.href = '/Home/Dashboard';
-            }
+           
         };
     </script>
 </body>

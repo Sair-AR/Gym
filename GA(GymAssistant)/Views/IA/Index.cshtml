@@ -1,13 +1,8 @@
 ﻿@model IEnumerable<GA_GymAssistant_.Models.IAConsulta>
-@using Microsoft.Extensions.Configuration
-@inject IConfiguration Configuration
-
 @{
-    ViewData["Title"] = "Entrenador IA";
-    Layout = null; // Para asegurar que este sea el archivo completo y autocontenido
-
-    // Se mantiene la inyección de configuración, aunque el formulario POST se gestiona en C#
-    var geminiApiKey = Configuration["Gemini:ApiKey"] ?? "";
+    Layout = null;
+    var historial = ViewBag.Historial as List<GA_GymAssistant_.Models.Conversacion>;
+    var currentChatId = ViewBag.ChatActualId as int?;
 }
 
 <!DOCTYPE html>
@@ -15,184 +10,215 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewData["Title"]</title>
+    <title>Entrenador IA | Gym Assistant</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
     <style>
-
-        /* Estilos generales */
-                @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-
-                body {
-                        font-family: 'Inter', sans-serif;
-                        background-color: #0F172A; /* Slate 900 */
-                        color: #E2E8F0; /* Slate 200 */
-                        min-height: 100vh;
-
+        /* Scrollbar personalizada */
+        ::-webkit-scrollbar {
+            width: 8px;
         }
 
-                .card {
-                        background-color: #1E293B; /* Slate 800 */
-                        border: 1px solid #334155; /* Slate 700 */
-                        transition: transform 0.2s, box-shadow 0.2s;
-                        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-
+        ::-webkit-scrollbar-track {
+            background: #1f2937;
         }
 
-                    .card:hover {
-                            transform: translateY(-2px);
-                            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -4px rgba(0, 0, 0, 0.15);
-
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 4px;
         }
 
-                .btn-primary {
-                        background-color: #4F46E5; /* Indigo 600 */
-                        color: white;
-                        transition: background-color 0.2s, transform 0.1s;
-
-        }
-
-                    .btn-primary:hover {
-                            background-color: #4338CA; /* Indigo 700 */
-                            transform: scale(1.005);
-
-        }
-
-                .gemini-response {
-                        background-color: #1A222F; /* Darker than card for contrast */
-                        border-left: 4px solid #10B981; /* Emerald 500 */
-
-        }
-
-                .form-control {
-                        background-color: #334155; /* Slate 700 */
-                        border: 1px solid #475569; /* Slate 600 */
-                        color: #E2E8F0;
-                        padding: 0.75rem;
-                        border-radius: 0.5rem;
-
-        }
-
-                    .form-control::placeholder {
-                            color: #94A3B8; /* Slate 400 */
-
-        }
-
-                    .form-control:focus {
-                            outline: none;
-                            border-color: #4F46E5; /* Indigo 600 */
-                            box-shadow: 0 0 0 2px #1E293B, 0 0 0 4px #4F46E5;
-
-        }
-
-        /* Estilo para el botón de logout (Indigo 600 con un color de fondo diferente para destacar) */
-        .btn-logout {
-            background-color: #EF4444; /* Rojo 500 */
-            color: white;
-            transition: background-color 0.2s;
-        }
-
-            .btn-logout:hover {
-                background-color: #DC2626; /* Rojo 600 */
+            ::-webkit-scrollbar-thumb:hover {
+                background: #6b7280;
             }
 
+        /* Animación Fade In */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
 
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
-<body class="p-4 sm:p-8">
+<body class="bg-gray-900 text-gray-100 font-sans overflow-hidden flex h-screen">
 
-    <div class="max-w-7xl mx-auto">
+    <aside class="w-72 bg-[#0f1117] flex flex-col border-r border-gray-800 hidden md:flex z-20">
 
-        <header class="mb-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div class="text-center sm:text-left">
-                <h1 class="text-4xl font-extrabold text-white flex items-center justify-center sm:justify-start">
-                    <i data-lucide="dumbbell" class="w-8 h-8 mr-3 text-indigo-400"></i>
-                    Entrenador IA
-                </h1>
-                <p class="text-indigo-400 mt-1">Chat de Consultas con Google Gemini</p>
-            </div>
-
-            <form asp-controller="Auth" asp-action="Logout" method="post" class="m-0">
-                <button type="submit" class="btn-logout px-4 py-2 rounded-lg font-medium flex items-center shadow-lg">
-                    <i data-lucide="log-out" class="w-5 h-5 mr-2"></i>
-                    Cerrar Sesión
+        <div class="p-4">
+            <form asp-action="NuevaConversacion" method="post">
+                <button type="submit"
+                        class="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium py-3 px-4 rounded-full flex items-center gap-3 transition shadow-sm border border-gray-700 group">
+                    <div class="bg-gray-700 p-1 rounded-full group-hover:bg-gray-600"><i class="fa-solid fa-plus text-xs"></i></div>
+                    <span>Nueva conversación</span>
                 </button>
             </form>
-        </header>
+        </div>
 
+        <div class="flex-1 overflow-y-auto px-2 space-y-1 py-2">
+            <div class="px-4 py-2 text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Tus Chats</div>
 
-        <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
-
-            <div class="md:col-span-4">
-                <div class="card p-6 rounded-xl shadow-xl h-full">
-                    <h3 class="text-2xl font-bold text-indigo-400 flex items-center">
-                        <i data-lucide="message-circle-question" class="w-6 h-6 mr-2"></i>
-                        Consulta
-                    </h3>
-                    <p class="text-sm text-slate-400 mt-1 mb-4">Powered by Google Gemini</p>
-
-                    <form asp-action="Consultar" method="post" class="space-y-4">
-                        <div class="mb-3">
-                            <label class="block text-slate-300 font-medium mb-2">¿En qué puedo ayudarte hoy?</label>
-                            <textarea name="pregunta" class="form-control w-full resize-none" rows="5" placeholder="Ej: Me duele la espalda baja, ¿qué ejercicios evito?" required></textarea>
-                        </div>
-                        <button type="submit" class="btn-primary w-full px-6 py-3 rounded-xl font-semibold flex items-center justify-center">
-                            <i data-lucide="send" class="w-5 h-5 mr-2"></i>
-                            Enviar Consulta
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <div class="md:col-span-8">
-                <h4 class="text-2xl font-bold mb-4 text-white">
-                    <i data-lucide="history" class="w-6 h-6 mr-2 inline-block"></i>
-                    Tus últimas consultas
-                </h4>
-
-                @if (Model != null && Model.Any())
+            @if (historial != null && historial.Any())
+            {
+                foreach (var chat in historial)
                 {
-                    <div class="space-y-4">
-                        @foreach (var item in Model)
-                        {
-                            <div class="card p-5 rounded-xl border-indigo-500/30">
+                    <div class="group relative flex items-center justify-between px-3 py-2 mb-1 rounded-lg transition @(currentChatId == chat.IdConversacion ? "bg-indigo-900/40 border-l-4 border-indigo-500" : "hover:bg-gray-800")">
 
-                                <div class="mb-3">
-                                    <p class="text-indigo-300 font-bold mb-1 flex items-center">
-                                        <i data-lucide="user" class="w-4 h-4 mr-2"></i>
-                                        Tú:
-                                    </p>
-                                    <p class="text-slate-200">@item.Pregunta</p>
-                                </div>
+                        <a href="@Url.Action("Index", new { idConversacion = chat.IdConversacion })"
+                           class="flex-1 flex items-center gap-3 text-sm truncate mr-2 @(currentChatId == chat.IdConversacion ? "text-indigo-200 font-medium" : "text-gray-400 group-hover:text-gray-200")"
+                           title="@chat.Titulo">
+                            <i class="fa-regular fa-message text-xs"></i>
+                            <span class="truncate">@chat.Titulo</span>
+                        </a>
 
-                                <div class="gemini-response p-4 rounded-lg">
-                                    <p class="text-emerald-400 font-bold mb-2 flex items-center">
-                                        <i data-lucide="zap" class="w-4 h-4 mr-2"></i>
-                                        Gemini:
-                                    </p>
-                                    <div class="text-slate-300" style="white-space: pre-line">@item.Respuesta</div>
-                                </div>
+                        <div class="relative group/menu">
+                            <button class="text-gray-500 hover:text-white opacity-0 group-hover:opacity-100 transition px-2 focus:opacity-100">
+                                <i class="fa-solid fa-ellipsis"></i>
+                            </button>
 
-                                <small class="text-slate-500 d-block text-right mt-3">@item.Fecha</small>
+                            <div class="absolute right-0 top-6 hidden group-hover/menu:block w-28 bg-[#1f2937] border border-gray-700 rounded-lg shadow-xl z-50 overflow-hidden">
+                                <form asp-action="BorrarConversacion" method="post" onsubmit="return confirm('¿Eliminar este chat permanentemente?');">
+                                    <input type="hidden" name="idConversacion" value="@chat.IdConversacion" />
+                                    <button type="submit" class="flex items-center gap-2 w-full text-left px-3 py-2 text-xs text-red-400 hover:bg-gray-700 hover:text-red-300 transition">
+                                        <i class="fa-solid fa-trash-can"></i> Eliminar
+                                    </button>
+                                </form>
                             </div>
-                        }
+                        </div>
                     </div>
                 }
-                else
-                {
-                    <div class="bg-slate-800 p-8 rounded-xl text-center border border-slate-700">
-                        <p class="text-slate-400">Aún no tienes consultas. ¡Usa el formulario para empezar tu chat con el Entrenador IA!</p>
+            }
+            else
+            {
+                <div class="text-center text-gray-600 text-xs p-4">No hay historial aún.</div>
+            }
+        </div>
+
+        <div class="p-4 border-t border-gray-800 bg-[#0f1117]">
+            <div class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-800 transition group">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white shadow-lg">
+                        @User.Identity.Name?.Substring(0, 1).ToUpper()
                     </div>
-                }
+                    <div class="flex flex-col">
+                        <span class="text-sm font-medium text-gray-200">@User.Identity.Name</span>
+                        <span class="text-[10px] text-green-500">● En línea</span>
+                    </div>
+                </div>
+                <a href="/Home/Dashboard" title="Salir al Dashboard" class="text-gray-500 hover:text-white transition">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                </a>
             </div>
         </div>
-    </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col bg-gray-900 relative">
+
+        <div class="md:hidden p-4 border-b border-gray-800 flex justify-between items-center bg-[#0f1117]">
+            <h1 class="font-bold flex items-center gap-2"><i class="fa-solid fa-dumbbell text-indigo-500"></i> Gym AI</h1>
+            <form asp-action="NuevaConversacion" method="post">
+                <button type="submit" class="text-indigo-400"><i class="fa-solid fa-plus-circle text-xl"></i></button>
+            </form>
+        </div>
+
+        <div id="chat-box" class="flex-1 overflow-y-auto p-4 md:p-10 space-y-8 pb-32 scroll-smooth">
+            @if (Model != null && Model.Any())
+            {
+                foreach (var msg in Model)
+                {
+                    <div class="flex justify-end fade-in">
+                        <div class="bg-[#2d3748] text-gray-100 px-6 py-4 rounded-2xl rounded-tr-sm max-w-2xl shadow-md border border-gray-700">
+                            <p class="text-sm md:text-base leading-relaxed">@msg.Pregunta</p>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-start gap-4 fade-in">
+                        <div class="w-8 h-8 rounded-full bg-indigo-600 flex-shrink-0 flex items-center justify-center shadow-lg shadow-indigo-500/20 mt-1">
+                            <i class="fa-solid fa-robot text-white text-xs"></i>
+                        </div>
+                        <div class="text-gray-300 max-w-3xl leading-relaxed text-sm md:text-base">
+                            @Html.Raw(msg.Respuesta.Replace("\n", "<br>").Replace("**", "<b>").Replace("##", "<h3 class='text-lg font-bold mt-2 mb-1 text-white'>"))
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="h-full flex flex-col items-center justify-center text-center opacity-90 fade-in">
+                    <div class="w-20 h-20 bg-gray-800 rounded-3xl flex items-center justify-center mb-6 shadow-2xl border border-gray-700 rotate-6 transition hover:rotate-0">
+                        <i class="fa-solid fa-brain text-4xl text-indigo-400"></i>
+                    </div>
+                    <h2 class="text-3xl md:text-4xl font-bold mb-3 text-white">Hola, @User.Identity.Name</h2>
+                    <p class="text-gray-400 text-lg mb-8 max-w-md">Soy tu entrenador personal. ¿En qué trabajamos hoy?</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl px-6">
+                        <button onclick="enviarTexto('Dame una rutina de fuerza de 4 días')" class="p-4 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-indigo-500 rounded-xl text-left transition group">
+                            <span class="block text-indigo-400 font-bold mb-1 group-hover:text-indigo-300">🏋️ Rutina de Fuerza</span>
+                            <span class="text-gray-500 text-xs group-hover:text-gray-300">Plan de 4 días para hipertrofia</span>
+                        </button>
+                        <button onclick="enviarTexto('¿Qué comer para perder grasa?')" class="p-4 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-indigo-500 rounded-xl text-left transition group">
+                            <span class="block text-green-400 font-bold mb-1 group-hover:text-green-300">🥗 Nutrición</span>
+                            <span class="text-gray-500 text-xs group-hover:text-gray-300">Consejos para déficit calórico</span>
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-gray-900 via-gray-900 to-transparent pt-10 pb-6 px-4">
+            <div class="max-w-3xl mx-auto">
+                <form asp-action="Consultar" method="post" id="chatForm" class="relative group">
+                    <input type="hidden" name="idConversacion" value="@currentChatId" />
+
+                    <input id="input-pregunta" name="pregunta" autocomplete="off" required
+                           class="w-full bg-[#1f2937] text-white rounded-full py-4 pl-6 pr-14 focus:outline-none focus:ring-2 focus:ring-indigo-500 border border-gray-700 placeholder-gray-500 shadow-xl transition-all"
+                           placeholder="Escribe tu consulta sobre fitness..." />
+
+                    <button type="submit" id="btn-enviar" class="absolute right-2 top-2 p-2 bg-indigo-600 rounded-full hover:bg-indigo-500 text-white transition disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-arrow-up"></i>
+                    </button>
+                </form>
+                <p class="text-center text-[10px] text-gray-600 mt-3">
+                    Gym Assistant IA puede cometer errores. Consulta siempre a un profesional.
+                </p>
+            </div>
+        </div>
+
+    </main>
 
     <script>
-        // Inicializar iconos de Lucide al cargar la página
+        // Auto-scroll al final
         window.onload = function() {
-            lucide.createIcons();
+            scrollToBottom();
         };
+
+        function scrollToBottom() {
+            var chatBox = document.getElementById("chat-box");
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function enviarTexto(texto) {
+            document.getElementById('input-pregunta').value = texto;
+        }
+
+        // Efecto loading
+        document.getElementById('chatForm').addEventListener('submit', function() {
+            var btn = document.getElementById('btn-enviar');
+            var input = document.getElementById('input-pregunta');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+            input.readonly = true;
+        });
     </script>
 </body>
 </html>

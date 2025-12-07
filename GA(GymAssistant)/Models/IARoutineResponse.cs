@@ -22,6 +22,10 @@ namespace GA_GymAssistant.Models
     // Modelo principal que representa la estructura JSON de la rutina generada por la IA
     public class IARoutineResponse
     {
+
+        [JsonPropertyName("saludo")]
+        public string? saludo { get; set; }
+
         [JsonPropertyName("rutina_base")]
         public string? rutina_base { get; set; }
 
@@ -30,6 +34,9 @@ namespace GA_GymAssistant.Models
 
         [JsonPropertyName("notas")]
         public string? notas { get; set; }
+
+        [JsonPropertyName("nutricion")]
+        public string? nutricion { get; set; }
 
         // Colección de los ejercicios y sus parámetros
         [JsonPropertyName("ejercicios_detalle")]

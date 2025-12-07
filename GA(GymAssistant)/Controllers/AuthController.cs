@@ -1,15 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using GA_GymAssistant.Data;
+using GA_GymAssistant.Helpers; // Helper de seguridad
+using GA_GymAssistant_.Models;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using GA_GymAssistant.Data;
-using GA_GymAssistant.Models;
-using System.Security.Claims; // Necesario para Claims
-using Microsoft.AspNetCore.Authentication; // Necesario para SignInAsync
-using Microsoft.AspNetCore.Authentication.Cookies; // Necesario para CookieAuthenticationDefaults
-using Microsoft.AspNetCore.Authorization; // Importante para [AllowAnonymous]
+using System.Security.Claims;
 
 namespace GA_GymAssistant.Controllers
 {
-    // Si tienes [Authorize] en este nivel, recuerda que [AllowAnonymous] lo anula en los métodos.
     public class AuthController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -19,25 +19,19 @@ namespace GA_GymAssistant.Controllers
             _context = context;
         }
 
-        // =========================================================
-        // 1. LOGIN (GET) - PERMITE ACCESO SIN AUTENTICAR
-        // =========================================================
+        // GET: Vista Login
         [AllowAnonymous]
         [HttpGet]
         public IActionResult Login()
         {
-            // Opcional: Si el usuario ya está logueado, redirigir al Dashboard.
             if (User.Identity.IsAuthenticated)
             {
-                // Asegúrate de que "Index" y "Home" sean correctos para tu página principal
-                return RedirectToAction("Login", "Auth");
+                return RedirectToAction("Dashboard", "Home");
             }
             return View();
         }
 
-        // =========================================================
-        // 2. PROCESAR LOGIN (POST) - PERMITE ACCESO SIN AUTENTICAR
-        // =========================================================
+        // POST: Procesar Login
         [AllowAnonymous]
         [HttpPost("api/Auth/validar")]
         public async Task<IActionResult> Validar([FromBody] LoginRequest request)
@@ -47,21 +41,16 @@ namespace GA_GymAssistant.Controllers
                 return BadRequest("Faltan datos.");
             }
 
-            var user = await _context.Usuarios
-                .FirstOrDefaultAsync(u => u.Email == request.Email);
+            var user = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == request.Email);
 
             if (user == null) return Unauthorized("Usuario no encontrado.");
+            if (user.Estado == false) return Unauthorized("Tu cuenta está inactiva.");
 
-            if (user.Estado == false)
-            {
-                return Unauthorized("Tu cuenta está inactiva. Contacta al soporte.");
-            }
+            // Verificar contraseña
+            string hashPassword = Utilidades.EncriptarClave(request.Password);
+            if (user.PasswordHash != hashPassword) return Unauthorized("Contraseña incorrecta.");
 
-            // Nota: En producción, usa siempre un hash de contraseña (como BCrypt o Identity).
-            if (user.PasswordHash != request.Password)
-                return Unauthorized("Contraseña incorrecta.");
-
-            // CREAR SESIÓN BASADA EN CLAIMS (COOKIES)
+            // Crear Claims
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.IdUsuario.ToString()),
@@ -69,12 +58,14 @@ namespace GA_GymAssistant.Controllers
                 new Claim(ClaimTypes.Role, user.TipoUsuario)
             };
 
-            var claimsIdentity = new ClaimsIdentity(
-                claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
+            // CAMBIO DE SEGURIDAD: IsPersistent = false
+            // Esto hace que la sesión se cierre al cerrar el navegador.
             var authProperties = new AuthenticationProperties
             {
-                IsPersistent = true,
+                IsPersistent = false, // <--- CAMBIADO
+                ExpiresUtc = DateTime.UtcNow.AddMinutes(30) // Opcional: Expira en 30 mins de inactividad
             };
 
             await HttpContext.SignInAsync(
@@ -82,35 +73,62 @@ namespace GA_GymAssistant.Controllers
                 new ClaimsPrincipal(claimsIdentity),
                 authProperties);
 
-            // Devolver respuesta exitosa al frontend (esto es consumido por JavaScript en el Login)
-            return Ok(new
-            {
-                message = "Login exitoso. La sesión ha sido establecida.",
-                userId = user.IdUsuario,
-                nombre = user.Nombre,
-                rol = user.TipoUsuario
-            });
+            return Ok(new { message = "Login exitoso." });
         }
 
-        // =========================================================
-        // 3. CERRAR SESIÓN (POST) - NO LLEVA AllowAnonymous
-        // =========================================================
-        // La acción se llama simplemente [HttpPost] Logout para usarla con un <form> MVC.
+        // GET: Vista Registro
+        [AllowAnonymous]
+        [HttpGet]
+        public IActionResult Register()
+        {
+            if (User.Identity.IsAuthenticated) return RedirectToAction("Dashboard", "Home");
+            return View();
+        }
+
+        // POST: Procesar Registro
+        // POST: Procesar Registro
+        [AllowAnonymous]
+        [HttpPost("api/Auth/registrar")]
+        public async Task<IActionResult> Registrar([FromBody] RegisterRequest request)
+        {
+            if (string.IsNullOrEmpty(request.Nombre) || string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
+            {
+                return BadRequest("Todos los campos son obligatorios.");
+            }
+
+            bool existe = await _context.Usuarios.AnyAsync(u => u.Email == request.Email);
+            if (existe) return BadRequest("El correo ya está registrado.");
+
+            var nuevoUsuario = new Usuario
+            {
+                Nombre = request.Nombre,
+                Email = request.Email,
+                PasswordHash = Utilidades.EncriptarClave(request.Password),
+                Estado = true,
+                FechaRegistro = DateTime.Now,
+                TipoUsuario = "Cliente",
+                Nivel = "Principiante",
+                Objetivo = "Por definir"
+            };
+
+            _context.Usuarios.Add(nuevoUsuario);
+            await _context.SaveChangesAsync();
+
+            // --- ¡IMPORTANTE! AQUÍ BORRÉ EL CÓDIGO DE "SignInAsync" ---
+            // Al no haber SignInAsync, no se crea la cookie, y el usuario NO entra directo.
+
+            return Ok(new { message = "Registro exitoso. Por favor inicia sesión." });
+        }
+
+        // POST: Cerrar Sesión
         [HttpPost]
         public async Task<IActionResult> Logout()
         {
-            // El servidor elimina la cookie de autenticación
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-
-            // El servidor redirige al usuario a la acción Login del controlador Auth.
             return RedirectToAction("Login", "Auth");
         }
-    }
 
-    // Clase auxiliar para recibir el JSON del Login
-    public class LoginRequest
-    {
-        public string Email { get; set; }
-        public string Password { get; set; }
+        public class LoginRequest { public string Email { get; set; } public string Password { get; set; } }
+        public class RegisterRequest { public string Nombre { get; set; } public string Email { get; set; } public string Password { get; set; } }
     }
 }

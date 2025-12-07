@@ -22,5 +22,9 @@ namespace GA_GymAssistant_.Models
 
         // Propiedad de navegación
         public Usuario Usuario { get; set; }
+
+        public int? IdConversacion { get; set; } // Nuevo campo
+
+        public Conversacion? Conversacion { get; set; }
     }
 }

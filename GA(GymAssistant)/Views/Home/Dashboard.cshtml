@@ -1,0 +1,94 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<style>
+    .card-hover {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        color: white;
+        overflow: hidden;
+        position: relative;
+    }
+
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2) !important;
+        }
+
+    .bg-gradient-purple {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .bg-gradient-pink {
+        background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+    }
+
+    .icon-bg {
+        position: absolute;
+        right: -20px;
+        bottom: -20px;
+        font-size: 8rem;
+        opacity: 0.2;
+        transform: rotate(-15deg);
+    }
+</style>
+
+<div class="container py-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-5 pb-3 border-bottom">
+        <div>
+            <h2 class="fw-bold mb-0 text-dark">Mi Panel</h2>
+            <p class="text-muted mb-0">Bienvenido, @User.Identity.Name</p>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-5 bg-dark text-white rounded-4 overflow-hidden">
+        <div class="card-body p-5 position-relative">
+            <div class="row align-items-center">
+                <div class="col-lg-8 z-1">
+                    <h1 class="display-4 fw-bold mb-3">¡Vamos a entrenar! 💪</h1>
+                    <p class="lead opacity-75 mb-0">Tu asistente inteligente está listo para ayudarte con rutinas y consejos de nutrición en tiempo real.</p>
+                </div>
+                <div class="col-lg-4 d-none d-lg-block text-end opacity-25">
+                    <i class="fa-solid fa-dumbbell" style="font-size: 8rem;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+
+        <div class="col-md-5">
+            <div class="card h-100 card-hover bg-gradient-purple shadow-lg rounded-4">
+                <div class="card-body p-5 d-flex flex-column">
+                    <i class="fa-solid fa-user-gear icon-bg"></i>
+                    <div class="mb-4"><i class="fa-solid fa-user-pen fa-3x"></i></div>
+                    <h2 class="fw-bold">Mi Perfil</h2>
+                    <p class="opacity-90 fs-5">Actualiza tu peso, altura y lesiones para que la IA te conozca mejor.</p>
+                    <a asp-controller="Usuarios" asp-action="Perfil"
+                       asp-route-id="@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value"
+                       class="btn btn-light text-primary fw-bold rounded-pill mt-auto shadow py-3">
+                        Editar Mis Datos
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <div class="card h-100 card-hover bg-gradient-pink shadow-lg rounded-4">
+                <div class="card-body p-5 d-flex flex-column">
+                    <i class="fa-solid fa-robot icon-bg"></i>
+                    <div class="mb-4"><i class="fa-solid fa-comments fa-3x"></i></div>
+                    <h2 class="fw-bold">Hablar con la IA</h2>
+                    <p class="opacity-90 fs-5">Pide rutinas, dietas o consejos de salud a través del chat interactivo.</p>
+                    <a asp-controller="IA" asp-action="Index"
+                       class="btn btn-light text-danger fw-bold rounded-pill mt-auto shadow py-3">
+                        Abrir Chat
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

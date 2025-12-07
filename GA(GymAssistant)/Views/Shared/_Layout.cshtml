@@ -1,65 +1,125 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - GA_GymAssistant_</title>
+    <title>@ViewData["Title"] - GA GymAssistant</title>
 
-    <!-- Bootstrap -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
 
-    <!-- Archivos CSS del proyecto -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/estilos.css" asp-append-version="true" />
-
-    <!-- (Opcional) Estilo general del proyecto generado por ASP.NET -->
     <link rel="stylesheet" href="~/GA_GymAssistant_.styles.css" asp-append-version="true" />
-
-    <!-- (Opcional) Archivo styles.css si lo necesitas -->
     <link rel="stylesheet" href="~/styles.css" />
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        /* === CORRECCIÓN DEL FOOTER (Sticky Footer) === */
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            background-color: #f8f9fa; /* Fondo gris suave general */
+        }
+
+        /* El contenedor principal empuja el footer hacia abajo */
+        main {
+            flex: 1;
+        }
+
+        /* Estilo del Footer */
+        footer {
+            background-color: #1a1a1a; /* Negro elegante */
+            color: #adb5bd; /* Gris claro */
+            padding: 1.5rem 0;
+            width: 100%;
+            margin-top: auto; /* Asegura que se vaya al fondo */
+        }
+
+            footer a {
+                color: #fff;
+                text-decoration: none;
+                transition: color 0.3s ease;
+            }
+
+                footer a:hover {
+                    color: #0d6efd; /* Azul al pasar el mouse */
+                    text-decoration: underline;
+                }
+    </style>
 </head>
 
 <body>
 
-    <!-- NAVBAR (Opcional pero recomendado) -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
         <div class="container">
-            <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
-                GA GymAssistant
+            <a class="navbar-brand fw-bold" asp-area="" asp-controller="Home" asp-action="Dashboard">
+                <i class="fa-solid fa-dumbbell text-primary me-2"></i>GA GymAssistant
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav ms-auto">
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav ms-auto align-items-center">
+
                     <li class="nav-item">
                         <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                        <a class="nav-link" asp-controller="Home" asp-action="Privacy">Privacidad</a>
                     </li>
+
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <li class="nav-item ms-lg-3 border-start ps-lg-3 d-flex align-items-center">
+                            <span class="text-light me-3 small">
+                                Hola, <strong>@User.Identity.Name</strong>
+                            </span>
+
+                            <form asp-controller="Auth" asp-action="Logout" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                                    <i class="fa-solid fa-right-from-bracket"></i> Salir
+                                </button>
+                            </form>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item ms-lg-3">
+                            <a class="btn btn-primary btn-sm rounded-pill px-3" asp-controller="Auth" asp-action="Login">
+                                Iniciar Sesión
+                            </a>
+                        </li>
+                    }
                 </ul>
             </div>
         </div>
     </nav>
 
-    <!-- CONTENIDO DE CADA PÁGINA -->
-  
-    @RenderBody()
+    <main role="main" class="pb-3">
+        @RenderBody()
+    </main>
 
-    <!-- FOOTER -->
-    <footer class="border-top footer text-muted mt-5">
-        <div class="container">
-            &copy; 2025 - GA_GymAssistant_ -
-            <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <footer>
+        <div class="container text-center">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-md-start mb-2 mb-md-0">
+                    <span class="small">&copy; 2025 <strong>GA GymAssistant</strong>. Todos los derechos reservados.</span>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a href="#" class="small me-3">Política de Privacidad</a>
+                    <a href="#" class="small">Términos de Uso</a>
+                </div>
+            </div>
         </div>
     </footer>
 
-    <!-- Scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

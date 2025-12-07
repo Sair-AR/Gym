@@ -1,7 +1,6 @@
 ﻿using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using GA_GymAssistant_.Models;
 
 namespace GA_GymAssistant.Services
 {
@@ -9,18 +8,14 @@ namespace GA_GymAssistant.Services
     {
         private readonly HttpClient _httpClient;
         private readonly string _apiKey;
+        private const string MODELO = "gemini-1.5-flash";
 
-        // ✅ CORRECCIÓN 1: Usamos el modelo que confirmamos que funciona
-        private const string MODELO = "gemini-2.5-flash";
-
-        // ⚠️ PEGA TU CLAVE AQUÍ SI NO QUIERES USAR APPSETTINGS (Pero cuidado al compartir el código)
-        private const string API_KEY_RESPALDO = "AIzaSyBuS9LKePcEcD8QVSrtyIRFZfR5RmowJrA";
+        // TU CLAVE API (Pégala aquí si no está en appsettings)
+        private const string API_KEY_RESPALDO = "AIzaSyA2pg0dPzFkXpOeBpEL1b683-OTQB0HVPs";
 
         public IAGymService(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
-
-            // Intenta leer del archivo json, si no encuentra nada, usa la de respaldo
             var keyConfig = configuration["Gemini:ApiKey"];
             _apiKey = !string.IsNullOrEmpty(keyConfig) ? keyConfig : API_KEY_RESPALDO;
         }
@@ -29,77 +24,32 @@ namespace GA_GymAssistant.Services
         {
             var url = $"https://generativelanguage.googleapis.com/v1beta/models/{MODELO}:generateContent?key={_apiKey}";
 
-            var requestBody = new
-            {
-                contents = new[] {
-                    new { parts = new[] { new { text = $"Contexto: {contextoUsuario}. Pregunta: {preguntaUsuario}" } } }
-                }
-            };
-
-            return await EnviarSolicitud(url, requestBody);
-        }
-
-        public async Task<string> GenerateRoutineFromAI(Usuario usuario, List<Ejercicio> ejerciciosDisponibles, string comentariosAdicionales = "")
-        {
-            // ✅ CORRECCIÓN 2: Ahora este método usa también 'gemini-1.5-flash' (antes tenía el gemini-3 que fallaba)
-            var url = $"https://generativelanguage.googleapis.com/v1beta/models/{MODELO}:generateContent?key={_apiKey}";
-
-            var listadoEjerciciosTexto = string.Join("\n",
-                ejerciciosDisponibles.Select(e => $"- {e.Nombre} (Zona: {e.Zona}, Nivel: {e.Nivel})"));
-
-            var promptRutina = $@"
-                Actúa como un entrenador personal experto. Genera una rutina para este usuario:
-                
-                PERFIL:
-                - Nombre: {usuario.Nombre}
-                - Objetivo: {usuario.Objetivo}
-                - Nivel: {usuario.Nivel}
-                - Lesiones: {usuario.Lesiones}
-                
-                PREFERENCIAS EXTRA: {comentariosAdicionales}
-
-                INSTRUCCIÓN IMPORTANTE:
-                La rutina DEBE crearse basándose PRINCIPALMENTE en la siguiente lista de ejercicios disponibles en nuestro gimnasio.
-                Si necesitas agregar un ejercicio muy común que no esté en la lista, puedes hacerlo, pero prioriza estos:
-
-                LISTA DE EJERCICIOS DISPONIBLES:
-                {listadoEjerciciosTexto}
-
-                FORMATO DE RESPUESTA:
-                Día X: [Grupo Muscular]
-                - Ejercicio: [Nombre] | Series: [X] | Reps: [X]
-            ";
+            // Le damos personalidad al chat
+            var prompt = $"Actúa como un entrenador personal experto, motivador y conciso. Contexto del usuario: {contextoUsuario}. Pregunta: {preguntaUsuario}";
 
             var requestBody = new
             {
-                contents = new[] { new { parts = new[] { new { text = promptRutina } } } }
+                contents = new[] { new { parts = new[] { new { text = prompt } } } }
             };
 
-            return await EnviarSolicitud(url, requestBody);
-        }
-
-        // ✅ MEJORA: Método auxiliar para no repetir código y manejar errores en un solo lugar
-        private async Task<string> EnviarSolicitud(string url, object requestBody)
-        {
             var jsonContent = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
 
             try
             {
                 var response = await _httpClient.PostAsync(url, jsonContent);
 
-                if (!response.IsSuccessStatusCode)
-                {
-                    return $"FALLO DE CONEXIÓN (Error {response.StatusCode}). \nVerifica tu API Key o el modelo.";
-                }
+                if (!response.IsSuccessStatusCode) return "Lo siento, tuve un problema de conexión. Intenta de nuevo.";
 
                 var result = await response.Content.ReadAsStringAsync();
                 var jsonNode = JsonNode.Parse(result);
+
+                // Extraer solo el texto de la respuesta
                 return jsonNode?["candidates"]?[0]?["content"]?["parts"]?[0]?["text"]?.ToString()
-                       ?? "La IA no generó respuesta.";
+                       ?? "No supe qué responder.";
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return $"Error técnico: {ex.Message}";
+                return "Ocurrió un error al procesar tu consulta.";
             }
         }
     }

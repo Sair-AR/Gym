@@ -1,16 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using GA_GymAssistant.Data;
-using GA_GymAssistant.Models; // Asegúrate de que IAConsulta y Usuario están aquí
+using GA_GymAssistant_.Models;
 using GA_GymAssistant.Services;
-using Microsoft.AspNetCore.Authorization; // Necesario para [Authorize]
 using System.Security.Claims;
-using GA_GymAssistant_.Models; // Necesario para ClaimTypes
 
 namespace GA_GymAssistant.Controllers
 {
-    // Aplicamos [Authorize] a nivel de controlador para proteger todas las acciones de la IA
-    [Authorize]
     public class IAController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -22,70 +18,112 @@ namespace GA_GymAssistant.Controllers
             _iaService = iaService;
         }
 
-        // Método auxiliar para obtener el ID del usuario logueado
-        private int GetUserId()
+        // GET: Muestra el chat y el historial
+        public async Task<IActionResult> Index(int? idConversacion)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            // Ya que el controlador está protegido con [Authorize], 
-            // este claim debería existir y ser válido.
-            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int idUsuario))
-            {
-                return idUsuario;
-            }
-            // Si falla, retorna 0 o lanza una excepción (aunque [Authorize] debería prevenir esto)
-            throw new UnauthorizedAccessException("ID de usuario no encontrado en la sesión.");
-        }
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
-        public async Task<IActionResult> Index()
-        {
-            // OBTENEMOS EL ID REAL del usuario logueado
-            int idUsuario = GetUserId();
-
-            var historial = await _context.IAConsultas
-                .Where(c => c.IdUsuario == idUsuario)
-                .OrderByDescending(c => c.Fecha) // Lo más nuevo arriba
-                .Take(5)
+            // 1. CARGAR HISTORIAL (Para la barra lateral izquierda)
+            var historial = await _context.Conversaciones
+                .Where(c => c.IdUsuario == userId)
+                .OrderByDescending(c => c.FechaInicio)
                 .ToListAsync();
 
-            return View(historial);
-        }
+            // Pasamos datos a la vista usando ViewBag
+            ViewBag.Historial = historial;
+            ViewBag.ChatActualId = idConversacion;
 
-        [HttpPost]
-        public async Task<IActionResult> Consultar(string pregunta)
-        {
-            if (string.IsNullOrWhiteSpace(pregunta)) return RedirectToAction("Index");
-
-            // OBTENEMOS EL ID REAL del usuario logueado
-            int idUsuario = GetUserId();
-
-            // 1. Buscamos al usuario para obtener su perfil real
-            var usuario = await _context.Usuarios.FindAsync(idUsuario);
-
-            // 2. Preparamos el contexto para la IA con datos reales
-            string contexto = "Usuario Anónimo"; // Fallback, pero ya no debería ser Anónimo
-            if (usuario != null)
+            // 2. CARGAR MENSAJES (Para la zona derecha)
+            if (idConversacion.HasValue)
             {
-                // Aquí estamos pasando los datos del usuario logueado a la IA
-                contexto = $"Nombre: {usuario.Nombre}, Objetivo: {usuario.Objetivo}, Lesiones: {usuario.Lesiones}, Nivel: {usuario.Nivel}";
+                var mensajes = await _context.IAConsultas
+                    .Where(m => m.IdConversacion == idConversacion && m.IdUsuario == userId)
+                    .OrderBy(m => m.Fecha)
+                    .ToListAsync();
+                return View(mensajes);
             }
 
-            // 3. Llamamos a Gemini
-            string respuestaIA = await _iaService.ObtenerRespuesta(pregunta, contexto);
+            // Si no hay ID, es una pantalla de "Nueva Conversación" vacía
+            return View(new List<IAConsulta>());
+        }
 
-            // 4. Guardamos en la Base de Datos con el ID de usuario real
+        // POST: Crear una nueva conversación vacía
+        [HttpPost]
+        public IActionResult NuevaConversacion()
+        {
+            return RedirectToAction("Index"); // Recarga la página sin ID
+        }
+
+        // POST: Enviar mensaje
+        [HttpPost]
+        public async Task<IActionResult> Consultar(string pregunta, int? idConversacion)
+        {
+            if (string.IsNullOrWhiteSpace(pregunta)) return RedirectToAction("Index", new { idConversacion });
+
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var user = await _context.Usuarios.FindAsync(userId);
+
+            // Si es el primer mensaje, CREAMOS la conversación en BD
+            if (!idConversacion.HasValue || idConversacion == 0)
+            {
+                var nuevaConv = new Conversacion
+                {
+                    IdUsuario = userId,
+                    // Usamos las primeras palabras como título
+                    Titulo = pregunta.Length > 20 ? pregunta.Substring(0, 20) + "..." : pregunta,
+                    FechaInicio = DateTime.Now
+                };
+                _context.Conversaciones.Add(nuevaConv);
+                await _context.SaveChangesAsync();
+                idConversacion = nuevaConv.IdConversacion; // Guardamos el ID nuevo
+            }
+
+            // Llamar a la IA
+            string contexto = $"Usuario: {user.Nombre}, Objetivo: {user.Objetivo}";
+            string respuesta = await _iaService.ObtenerRespuesta(pregunta, contexto);
+
+            // Guardar el mensaje vinculado a esa conversación
             var consulta = new IAConsulta
             {
-                IdUsuario = idUsuario,
+                IdUsuario = userId,
+                IdConversacion = idConversacion,
                 Pregunta = pregunta,
-                Respuesta = respuestaIA,
+                Respuesta = respuesta,
                 Fecha = DateTime.Now
             };
-
-            _context.Add(consulta);
+            _context.IAConsultas.Add(consulta);
             await _context.SaveChangesAsync();
 
-            // Puedes usar TempData o ViewBag para mostrar la respuesta inmediatamente
-            TempData["RespuestaIA"] = respuestaIA;
+            // Recargar la misma conversación
+            return RedirectToAction("Index", new { idConversacion });
+        }
+
+        // POST: Borrar una conversación específica
+        [HttpPost]
+        public async Task<IActionResult> BorrarConversacion(int idConversacion)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null) return RedirectToAction("Login", "Auth");
+            int userId = int.Parse(userIdClaim.Value);
+
+            // 1. Buscar la conversación
+            var conversacion = await _context.Conversaciones
+                .Include(c => c.Mensajes) // ¡IMPORTANTE! Traer los mensajes también
+                .FirstOrDefaultAsync(c => c.IdConversacion == idConversacion && c.IdUsuario == userId);
+
+            if (conversacion != null)
+            {
+                // 2. PRIMERO: Borrar los mensajes de esa conversación (si tiene)
+                if (conversacion.Mensajes != null && conversacion.Mensajes.Any())
+                {
+                    _context.IAConsultas.RemoveRange(conversacion.Mensajes);
+                }
+
+                // 3. SEGUNDO: Ahora sí, borrar la conversación (ya está vacía)
+                _context.Conversaciones.Remove(conversacion);
+
+                await _context.SaveChangesAsync();
+            }
 
             return RedirectToAction("Index");
         }

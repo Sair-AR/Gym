@@ -1,0 +1,102 @@
+﻿@model GA_GymAssistant_.Models.Usuario
+@{
+    ViewData["Title"] = "Completar Perfil";
+}
+
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h2 class="fw-bold text-primary">Configuración de Perfil</h2>
+            <p class="text-muted">Actualiza tus datos físicos.</p>
+        </div>
+    </div>
+
+    <form asp-action="Perfil">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="IdUsuario" />
+
+        <input type="hidden" asp-for="Email" />
+        <input type="hidden" asp-for="PasswordHash" />
+        <input type="hidden" asp-for="TipoUsuario" />
+        <input type="hidden" asp-for="Estado" />
+        <input type="hidden" asp-for="FechaRegistro" />
+
+        <div class="row justify-content-center">
+            <div class="col-lg-4 mb-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center text-primary fw-bold border" style="width: 100px; height: 100px; font-size: 2rem;">
+                            @(Model.Nombre?.Substring(0, 1) ?? "U")
+                        </div>
+                        <h5 class="fw-bold mt-3">@Model.Nombre</h5>
+                        <p class="text-muted small">@Model.Email</p>
+
+                        <div class="form-floating mb-3 text-start mt-4">
+                            <input asp-for="Nombre" class="form-control" />
+                            <label asp-for="Nombre">Nombre</label>
+                        </div>
+                        <div class="form-floating text-start">
+                            <input asp-for="AvatarUrl" class="form-control" />
+                            <label asp-for="AvatarUrl">URL Avatar</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8 mb-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white border-bottom py-3">
+                        <h5 class="mb-0 fw-bold text-primary">Datos Físicos</h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <div class="form-floating"><input asp-for="Edad" class="form-control" /><label asp-for="Edad">Edad</label></div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating"><input asp-for="Peso" class="form-control" /><label asp-for="Peso">Peso (kg)</label></div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating"><input asp-for="Altura" class="form-control" /><label asp-for="Altura">Altura (m)</label></div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select asp-for="Nivel" class="form-select">
+                                        <option value="Principiante">Principiante</option>
+                                        <option value="Intermedio">Intermedio</option>
+                                        <option value="Avanzado">Avanzado</option>
+                                    </select>
+                                    <label asp-for="Nivel">Nivel</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select asp-for="Objetivo" class="form-select">
+                                        <option value="Pérdida de Peso">Pérdida de Peso</option>
+                                        <option value="Ganar Músculo">Ganar Músculo</option>
+                                    </select>
+                                    <label asp-for="Objetivo">Objetivo</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input asp-for="ZonaObjetivo" class="form-control" />
+                            <label asp-for="ZonaObjetivo">Zona Prioritaria</label>
+                        </div>
+                        <div class="form-floating">
+                            <textarea asp-for="Lesiones" class="form-control" style="height: 100px"></textarea>
+                            <label asp-for="Lesiones">Lesiones</label>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white border-top p-3 text-end">
+                        <a asp-controller="Home" asp-action="Dashboard" class="btn btn-light border me-2">Cancelar</a>
+                        <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm">Guardar y Volver</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

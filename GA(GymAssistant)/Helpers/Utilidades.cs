@@ -7,7 +7,7 @@ namespace GA_GymAssistant.Helpers
     {
         public static string EncriptarClave(string clave)
         {
-            // Convierte "hola123" en una cadena segura tipo "a665a45920422f9d417..."
+        
             StringBuilder sb = new StringBuilder();
             using (SHA256 hash = SHA256.Create())
             {

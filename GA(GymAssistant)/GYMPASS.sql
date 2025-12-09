@@ -1,4 +1,4 @@
-﻿-- =======================================================================
+﻿﻿-- =======================================================================
 
 -- 1. CREACIÓN DE LA BASE DE DATOS
 CREATE DATABASE GYMPASS
@@ -85,6 +85,24 @@ CREATE TABLE RutinaDetalle (
     FOREIGN KEY (IdEjercicio) REFERENCES Ejercicios (IdEjercicio)
 );
 GO
+
+-- 1. Crear tabla de Conversaciones
+CREATE TABLE Conversaciones (
+    IdConversacion INT PRIMARY KEY IDENTITY(1,1),
+    IdUsuario INT NOT NULL,
+    Titulo NVARCHAR(100), -- Ej: "Rutina de piernas", "Dieta keto"
+    FechaInicio DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (IdUsuario) REFERENCES Usuarios(IdUsuario)
+);
+
+-- 2. Modificar tabla IAConsultas (si ya tiene datos, esto añade la columna)
+ALTER TABLE IA_Consultas
+ADD IdConversacion INT NULL;
+
+-- 3. Crear la relación (Clave Foránea)
+ALTER TABLE IA_Consultas
+ADD CONSTRAINT FK_IAConsultas_Conversaciones
+FOREIGN KEY (IdConversacion) REFERENCES Conversaciones(IdConversacion);
 
 -- =======================================================================
 -- 3. INSERCIÓN DE DATOS INICIALES (SEEDS)

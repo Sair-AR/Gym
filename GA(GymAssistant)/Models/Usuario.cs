@@ -23,9 +23,9 @@ namespace GA_GymAssistant_.Models
 
         public double? Altura { get; set; }
 
-        public string? Nivel { get; set; } // Ej: Principiante, Intermedio
+        public string? Nivel { get; set; } 
 
-        public string? Objetivo { get; set; } // Ej: Ganar músculo, Pérdida de peso
+        public string? Objetivo { get; set; } 
 
         public string? ZonaObjetivo { get; set; }
 
@@ -33,8 +33,23 @@ namespace GA_GymAssistant_.Models
 
         public string? AvatarUrl { get; set; }
 
-        public DateTime? FechaRegistro { get; set; } = DateTime.Now; // DEFAULT GETDATE()
+        public DateTime? FechaRegistro { get; set; } = DateTime.Now; 
 
         public string? TipoUsuario { get; set; }
+
+        [NotMapped] 
+        public double? IMC
+        {
+            get
+            {
+                if (Peso.HasValue && Altura.HasValue && Altura.Value > 0)
+                {    
+                    double imcCalculado = Peso.Value / (Altura.Value * Altura.Value);
+                    return Math.Round(imcCalculado, 2);
+                }
+                return null; 
+            }
+        }
+
     }
 }

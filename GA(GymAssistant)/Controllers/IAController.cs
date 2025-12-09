@@ -43,18 +43,16 @@ namespace GA_GymAssistant.Controllers
                 return View(mensajes);
             }
 
-            // Si no hay ID, es una pantalla de "Nueva Conversación" vacía
             return View(new List<IAConsulta>());
         }
 
-        // POST: Crear una nueva conversación vacía
         [HttpPost]
         public IActionResult NuevaConversacion()
         {
-            return RedirectToAction("Index"); // Recarga la página sin ID
+            return RedirectToAction("Index");
         }
 
-        // POST: Enviar mensaje
+   
         [HttpPost]
         public async Task<IActionResult> Consultar(string pregunta, int? idConversacion)
         {
@@ -62,27 +60,25 @@ namespace GA_GymAssistant.Controllers
 
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
             var user = await _context.Usuarios.FindAsync(userId);
-
-            // Si es el primer mensaje, CREAMOS la conversación en BD
             if (!idConversacion.HasValue || idConversacion == 0)
             {
                 var nuevaConv = new Conversacion
                 {
                     IdUsuario = userId,
-                    // Usamos las primeras palabras como título
+  
                     Titulo = pregunta.Length > 20 ? pregunta.Substring(0, 20) + "..." : pregunta,
                     FechaInicio = DateTime.Now
                 };
                 _context.Conversaciones.Add(nuevaConv);
                 await _context.SaveChangesAsync();
-                idConversacion = nuevaConv.IdConversacion; // Guardamos el ID nuevo
+                idConversacion = nuevaConv.IdConversacion; 
             }
 
-            // Llamar a la IA
-            string contexto = $"Usuario: {user.Nombre}, Objetivo: {user.Objetivo}";
+        
+            string contexto = $"Usuario: {user.Nombre}, Objetivo: {user.Objetivo}, IMC: {user.IMC}, Lesiones:{user.Lesiones}";
             string respuesta = await _iaService.ObtenerRespuesta(pregunta, contexto);
 
-            // Guardar el mensaje vinculado a esa conversación
+          
             var consulta = new IAConsulta
             {
                 IdUsuario = userId,
@@ -98,7 +94,6 @@ namespace GA_GymAssistant.Controllers
             return RedirectToAction("Index", new { idConversacion });
         }
 
-        // POST: Borrar una conversación específica
         [HttpPost]
         public async Task<IActionResult> BorrarConversacion(int idConversacion)
         {
@@ -108,18 +103,15 @@ namespace GA_GymAssistant.Controllers
 
             // 1. Buscar la conversación
             var conversacion = await _context.Conversaciones
-                .Include(c => c.Mensajes) // ¡IMPORTANTE! Traer los mensajes también
+                .Include(c => c.Mensajes) 
                 .FirstOrDefaultAsync(c => c.IdConversacion == idConversacion && c.IdUsuario == userId);
 
             if (conversacion != null)
             {
-                // 2. PRIMERO: Borrar los mensajes de esa conversación (si tiene)
                 if (conversacion.Mensajes != null && conversacion.Mensajes.Any())
                 {
                     _context.IAConsultas.RemoveRange(conversacion.Mensajes);
                 }
-
-                // 3. SEGUNDO: Ahora sí, borrar la conversación (ya está vacía)
                 _context.Conversaciones.Remove(conversacion);
 
                 await _context.SaveChangesAsync();

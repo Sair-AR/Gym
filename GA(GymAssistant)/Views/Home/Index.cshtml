@@ -1,164 +1,318 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "GymAssistant AI - Tu Entrenador Virtual";
 }
+
 <style>
-    main {
-        padding: 0 !important;
-        margin: 0 !important;
-        max-width: 100% !important;
+    :root {
+        --primary-color: #0d6efd;
+        --accent-color: #0dcaf0;
+        --dark-bg: #0f172a;
+    }
+
+    /* --- ANIMACIONES (Corrección: Usamos @@ para que Razor no se confunda) --- */
+    @@keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+        100% { transform: translateY(0px); }
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translate3d(0, 40px, 0);
+        }
+        to {
+            opacity: 1;
+            transform: translate3d(0, 0, 0);
+        }
+    }
+
+    @@keyframes fadeOut { 
+        from { opacity: 1; } 
+        to { opacity: 0; } 
+    }
+
+    /* Clase para elementos que aparecen al hacer scroll */
+    .scroll-animate {
+        opacity: 0; /* Oculto inicialmente */
+    }
+
+    .scroll-animate.active {
+        animation: fadeInUp 0.8s ease-out forwards;
+    }
+
+    /* --- HERO SECTION MEJORADO --- */
+    .hero-section {
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%), 
+                    url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
+        background-size: cover;
+        background-position: center;
+        color: white;
+        padding: 120px 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-image-floating {
+        animation: float 6s ease-in-out infinite;
+        filter: drop-shadow(0 0 30px rgba(13,202,240,0.4));
+        max-width: 450px;
+    }
+
+    /* --- CARDS INTERACTIVAS --- */
+    .card-hover {
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .card-hover:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 1rem 3rem rgba(13,110,253,0.15)!important;
+        border-color: var(--primary-color);
+    }
+    
+    .feature-img {
+        height: 80px;
+        margin-bottom: 20px;
+    }
+
+    /* --- NUEVA SECCIÓN: CHAT SIMULADO --- */
+    .chat-simulation-container {
+        background-color: #f8f9fa;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .chat-bubble {
+        padding: 15px 20px;
+        border-radius: 20px;
+        margin-bottom: 15px;
+        max-width: 80%;
+        position: relative;
+        opacity: 0;
+        animation: fadeInUp 0.5s ease-out forwards;
+    }
+
+    .chat-bubble.user {
+        background-color: var(--primary-color);
+        color: white;
+        margin-left: auto;
+        border-bottom-right-radius: 5px;
+        animation-delay: 1s;
+    }
+
+    .chat-bubble.ai {
+        background-color: #e9ecef;
+        color: #212529;
+        margin-right: auto;
+        border-bottom-left-radius: 5px;
+        animation-delay: 2.5s;
+    }
+    
+    .ai-typing-indicator {
+        display: inline-block;
+        font-style: italic;
+        color: #6c757d;
+        margin-bottom: 10px;
+        opacity: 0;
+        animation: fadeInUp 0.5s ease-out forwards 1.5s, fadeOut 0.5s ease-out forwards 2.4s;
+    }
+
+    /* --- CÓMO FUNCIONA STEP --- */
+    .step-number-large {
+        font-size: 5rem;
+        font-weight: 900;
+        color: rgba(13, 110, 253, 0.1);
+        position: absolute;
+        top: -20px;
+        left: 20px;
+        z-index: 0;
+    }
+    .step-card-content {
+        position: relative;
+        z-index: 1;
+        padding-top: 20px;
     }
 </style>
-<!-- Hero Section -->
-<section class="hero">
-    <div class="hero-overlay"></div>
-    <div class="hero-content">
-        <h1>TRANSFORMA TU<br><span class="gradient-text">CUERPO Y MENTE</span></h1>
-        <p>Entrena con los mejores. Alcanza tus metas. Supera tus límites.</p>
-        <div class="hero-buttons">
-            <a href="#contact" class="btn btn-primary">Prueba Gratis 7 Días</a>
-            <a href="#pricing" class="btn btn-outline">Ver Planes</a>
-            <a asp-controller="Auth" asp-action="Login" class="btn btn-outline">Crea tus Rutinas</a>
-        </div>
-    </div>
-</section>
-
-<!-- Services Section -->
-<section class="services" id="services">
-    <div class="container">
-        <div class="section-header">
-            <h2>Nuestros Servicios</h2>
-            <p>Todo lo que necesitas para tu transformación</p>
-        </div>
-        <div class="services-grid">
-            <div class="service-card">
-                <i class="fas fa-dumbbell"></i>
-                <h3>Entrenamiento Personal</h3>
-                <p>Planes personalizados con entrenadores certificados para alcanzar tus objetivos</p>
-            </div>
-            <div class="service-card">
-                <i class="fas fa-users"></i>
-                <h3>Clases Grupales</h3>
-                <p>Yoga, CrossFit, Spinning, Zumba y más. Entrena con energía grupal</p>
-            </div>
-            <div class="service-card">
-                <i class="fas fa-trophy"></i>
-                <h3>Nutrición Deportiva</h3>
-                <p>Asesoría nutricional profesional para complementar tu entrenamiento</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Pricing Section -->
-<section class="pricing" id="pricing">
-    <div class="container">
-        <div class="section-header">
-            <h2>Planes de Membresía</h2>
-            <p>Elige el plan perfecto para ti</p>
-        </div>
-        <div class="pricing-grid">
-            <div class="pricing-card">
-                <h3>Básico</h3>
-                <div class="price">
-                    <span class="amount">$39</span>
-                    <span class="period">/mes</span>
+<section class="hero-section text-center text-lg-start">
+    <div class="container position-relative" style="z-index: 2;">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-5 mb-lg-0 scroll-animate">
+                <span class="badge bg-info text-dark mb-3 px-3 py-2 rounded-pill fw-bold">
+                    <i class="bi bi-stars"></i> Potenciado por Google Gemini
+                </span>
+                <h1 class="display-4 fw-bold mb-4 ls-tight">
+                    Tu Entrenador Personal<br />
+                    <span class="text-info">es una Inteligencia Artificial.</span>
+                </h1>
+                <p class="lead text-light opacity-90 mb-5 pe-lg-5">
+                    Deja de adivinar qué ejercicios hacer. Nuestra IA analiza tu perfil, lesiones y equipo disponible para construir la rutina perfecta para TI en segundos.
+                </p>
+                <div class="d-grid gap-3 d-sm-flex justify-content-center justify-content-lg-start">
+                    <a asp-controller="IA" asp-action="Index" class="btn btn-primary btn-lg px-5 py-3 fw-bold rounded-pill shadow-lg hover-lift">
+                        <i class="bi bi-chat-dots-fill me-2"></i> Hablar con el Entrenador
+                    </a>
                 </div>
-                <ul class="features">
-                    <li><i class="fas fa-clock"></i> Acceso ilimitado</li>
-                    <li><i class="fas fa-dumbbell"></i> Área de pesas y cardio</li>
-                    <li><i class="fas fa-users"></i> 2 clases grupales/semana</li>
-                </ul>
-                <a href="#contact" class="btn btn-outline">Seleccionar Plan</a>
             </div>
+            <div class="col-lg-6 text-center scroll-animate" style="animation-delay: 0.2s;">
+                <img src="https://cdn-icons-png.flaticon.com/512/1698/1698535.png" alt="AI Fitness Robot" class="img-fluid hero-image-floating">
+            </div>
+        </div>
+    </div>
+</section>
 
-            <div class="pricing-card featured">
-                <div class="badge">POPULAR</div>
-                <h3>Premium</h3>
-                <div class="price">
-                    <span class="amount">$69</span>
-                    <span class="period">/mes</span>
+<section class="py-5 bg-white">
+    <div class="container py-5">
+        <div class="row align-items-center">
+            <div class="col-lg-5 mb-5 mb-lg-0 scroll-animate">
+                <h2 class="fw-bold display-6 mb-4">Mira cómo funciona <span class="text-primary">en tiempo real</span></h2>
+                <p class="lead text-muted mb-4">Es tan fácil como chatear por WhatsApp. Tú le cuentas tu situación, y la IA procesa millones de datos para darte una solución segura y efectiva.</p>
+                <ul class="list-unstyled text-muted">
+                    <li class="mb-3"><i class="bi bi-check-circle-fill text-success me-2"></i> Entiende lenguaje natural.</li>
+                    <li class="mb-3"><i class="bi bi-check-circle-fill text-success me-2"></i> Recuerda tus lesiones previas.</li>
+                    <li class="mb-3"><i class="bi bi-check-circle-fill text-success me-2"></i> Ajusta las series y repeticiones.</li>
+                </ul>
+            </div>
+            <div class="col-lg-7 scroll-animate" style="animation-delay: 0.3s;">
+                <div class="chat-simulation-container">
+                    <div class="d-flex align-items-center mb-4 text-muted small">
+                        <i class="bi bi-robot fs-4 me-2 text-primary"></i> GymPass Assistant está escribiendo...
+                    </div>
+                    
+                    <div class="chat-bubble user shadow-sm">
+                        Hola, quiero una rutina de pierna para ganar fuerza. Pero ojo, tengo una lesión vieja en el menisco de la rodilla derecha. Tengo mancuernas en casa.
+                    </div>
+
+                    <span class="ai-typing-indicator ms-3">
+                        <span class="spinner-grow spinner-grow-sm text-primary" role="status"></span> Procesando lesiones...
+                    </span>
+
+                    <div class="chat-bubble ai shadow-sm">
+                        ¡Entendido! Priorizaremos la seguridad de tu rodilla. Evitaremos ejercicios de alto impacto o flexión profunda. Aquí tienes una rutina segura con mancuernas:
+                        <br><br>
+                        <strong>Día 1: Fuerza de Pierna (Segura)</strong><br>
+                        1. Puente de Glúteo con mancuerna: 4 series x 12 reps<br>
+                        2. Peso Muerto Rumano (poco peso): 3 series x 15 reps<br>
+                        ...
+                    </div>
                 </div>
-                <ul class="features">
-                    <li><i class="fas fa-clock"></i> Acceso 24/7</li>
-                    <li><i class="fas fa-dumbbell"></i> Todas las áreas</li>
-                    <li><i class="fas fa-users"></i> Clases grupales ilimitadas</li>
-                    <li><i class="fas fa-trophy"></i> Plan nutricional básico</li>
-                </ul>
-                <a href="#contact" class="btn btn-primary">Seleccionar Plan</a>
             </div>
+        </div>
+    </div>
+</section>
 
-            <div class="pricing-card">
-                <h3>Elite</h3>
-                <div class="price">
-                    <span class="amount">$99</span>
-                    <span class="period">/mes</span>
+<section class="py-5 bg-light position-relative overflow-hidden">
+    <div class="container py-5 position-relative z-2">
+        <div class="text-center mb-5 scroll-animate">
+            <h2 class="fw-bold display-6">Tu Cerebro Digital de Fitness</h2>
+            <p class="text-muted lead">Tecnología avanzada aplicada a tu salud.</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4 scroll-animate" style="animation-delay: 0.1s;">
+                <div class="card h-100 bg-white border-0 shadow-sm p-4 card-hover text-center">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2872/2872813.png" class="feature-img mx-auto" alt="Seguridad">
+                    <h4 class="fw-bold mt-3">Escudo contra Lesiones</h4>
+                    <p class="text-muted">
+                        Nuestro algoritmo detecta palabras clave sobre dolor o lesiones en tu perfil y filtra automáticamente cualquier ejercicio que pueda ser peligroso para ti.
+                    </p>
                 </div>
-                <ul class="features">
-                    <li><i class="fas fa-clock"></i> Acceso 24/7 prioritario</li>
-                    <li><i class="fas fa-dumbbell"></i> Entrenador personal 3x/sem</li>
-                    <li><i class="fas fa-users"></i> Todas las clases ilimitadas</li>
-                    <li><i class="fas fa-trophy"></i> Plan nutricional completo</li>
-                </ul>
-                <a href="#contact" class="btn btn-outline">Seleccionar Plan</a>
+            </div>
+            <div class="col-md-4 scroll-animate" style="animation-delay: 0.2s;">
+                <div class="card h-100 bg-white border-0 shadow-sm p-4 card-hover text-center">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2621/2621788.png" class="feature-img mx-auto" alt="Adaptabilidad">
+                    <h4 class="fw-bold mt-3">Adaptabilidad Total</h4>
+                    <p class="text-muted">
+                        ¿Solo tienes una banda elástica? ¿O un gimnasio completo? La IA re-calcula la rutina instantáneamente basándose en tu inventario actual.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4 scroll-animate" style="animation-delay: 0.3s;">
+                <div class="card h-100 bg-white border-0 shadow-sm p-4 card-hover text-center">
+                    <img src="https://cdn-icons-png.flaticon.com/512/4296/4296388.png" class="feature-img mx-auto" alt="Velocidad">
+                    <h4 class="fw-bold mt-3">Resultados Instantáneos</h4>
+                    <p class="text-muted">
+                        Olvída esperar días por un plan. Obtén una rutina estructurada, con días, series y repeticiones, en el tiempo que tardas en leer esto.
+                    </p>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Why Choose Us Section -->
-<section class="why-us">
-    <div class="container">
-        <div class="section-header">
-            <h2>¿Por Qué Elegirnos?</h2>
-            <p>Lo que nos hace diferentes</p>
+<section class="py-5 bg-white">
+    <div class="container py-5 my-5">
+        <div class="text-center mb-5 scroll-animate">
+            <h2 class="fw-bold">Comienza en 3 Simples Pasos</h2>
         </div>
-        <div class="why-grid">
-            <div class="why-item">
-                <i class="fas fa-trophy"></i>
-                <h3>Resultados Probados</h3>
-                <p>Miles de transformaciones exitosas</p>
+        <div class="row g-4">
+            <div class="col-md-4 scroll-animate" style="animation-delay: 0.1s;">
+                <div class="card bg-light border-0 h-100 p-4 position-relative overflow-hidden">
+                    <div class="step-number-large">01</div>
+                    <div class="step-card-content text-center">
+                        <i class="bi bi-person-badge display-4 text-primary mb-3"></i>
+                        <h5>Crea tu Perfil Médico</h5>
+                        <p class="text-muted">Lo más importante: dinos tu peso, nivel y detalla tus lesiones.</p>
+                    </div>
+                </div>
             </div>
-            <div class="why-item">
-                <i class="fas fa-users"></i>
-                <h3>Comunidad Activa</h3>
-                <p>Entrenamientos motivadores en grupo</p>
+            <div class="col-md-4 scroll-animate" style="animation-delay: 0.3s;">
+                <div class="card bg-light border-0 h-100 p-4 position-relative overflow-hidden">
+                    <div class="card-body step-card-content text-center">
+                        <i class="bi bi-chat-quote display-4 text-primary mb-3"></i>
+                        <h5>Haz tu Petición</h5>
+                        <p class="text-muted">Escribe al chat qué quieres lograr (ej: "Rutina de 3 días para perder grasa").</p>
+                    </div>
+                    <div class="step-number-large">02</div>
+                </div>
             </div>
-            <div class="why-item">
-                <i class="fas fa-dumbbell"></i>
-                <h3>Equipo Premium</h3>
-                <p>Tecnología de última generación</p>
-            </div>
-            <div class="why-item">
-                <i class="fas fa-clock"></i>
-                <h3>Horarios Flexibles</h3>
-                <p>Abierto 24/7 para tu comodidad</p>
+            <div class="col-md-4 scroll-animate" style="animation-delay: 0.5s;">
+                <div class="card bg-primary text-white border-0 h-100 p-4 position-relative overflow-hidden shadow">
+                    <div class="card-body step-card-content text-center">
+                        <i class="bi bi-clipboard-check display-4 text-white mb-3"></i>
+                        <h5 class="text-white">Recibe tu Plan</h5>
+                        <p class="text-white-50">La IA te entregará tu tabla personalizada lista para usar.</p>
+                        <a asp-controller="Usuarios" asp-action="Create" class="btn btn-light text-primary fw-bold rounded-pill mt-3 stretched-link">Registrarme Ahora</a>
+                    </div>
+                    <div class="step-number-large" style="color: rgba(255,255,255,0.1)">03</div>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Contact Section -->
-<section class="contact" id="contact">
-    <div class="container">
-        <h2>¡Comienza Hoy!</h2>
-        <p class="contact-subtitle">Visítanos o contáctanos para más información</p>
-        <div class="contact-grid">
-            <div class="contact-item">
-                <i class="fas fa-map-marker-alt"></i>
-                <h3>Ubicación</h3>
-                <p>Av. Principal 123<br>Ciudad, País</p>
-            </div>
-            <div class="contact-item">
-                <i class="fas fa-phone"></i>
-                <h3>Teléfono</h3>
-                <p>+1 (555) 123-4567</p>
-            </div>
-            <div class="contact-item">
-                <i class="fas fa-envelope"></i>
-                <h3>Email</h3>
-                <p>info@tugym.com</p>
-            </div>
-        </div>
-        <a href="#contact" class="btn btn-primary btn-large">Agenda tu Clase de Prueba</a>
+<section class="py-5 bg-dark text-white text-center position-relative overflow-hidden">
+     <div style="position: absolute; top: -50%; left: -20%; width: 500px; height: 500px; background: radial-gradient(circle, rgba(13,110,253,0.2) 0%, rgba(0,0,0,0) 70%); transform: rotate(45deg);"></div>
+
+    <div class="container position-relative z-2 py-4">
+        <h2 class="fw-bold display-5 mb-3">¿Listo para probar el futuro del fitness?</h2>
+        <p class="lead mb-5 text-white-50">Tu primer entrenador con inteligencia artificial te está esperando.</p>
+        <a asp-controller="IA" asp-action="Index" class="btn btn-info btn-lg rounded-pill px-5 py-3 fw-bold shadow-lg">
+            <i class="bi bi-rocket-takeoff me-2"></i> Iniciar Asistente Ahora
+        </a>
     </div>
 </section>
+
+<script>
+    // Este script detecta cuando los elementos entran en la pantalla al hacer scroll
+    // y les añade la clase 'active' para disparar la animación de entrada.
+    document.addEventListener("DOMContentLoaded", function () {
+        const animatedElements = document.querySelectorAll('.scroll-animate');
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    // Opcional: dejar de observar una vez animado para mejorar rendimiento
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.1 // Se activa cuando el 10% del elemento es visible
+        });
+
+        animatedElements.forEach(el => observer.observe(el));
+    });
+</script>

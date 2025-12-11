@@ -79,7 +79,7 @@ namespace GA_GymAssistant.Controllers
             }
 
             // Llamar a la IA
-            string contexto = $"Usuario: {user.Nombre}, Objetivo: {user.Objetivo}";
+            string contexto = $"Usuario: {user.Nombre}, Objetivo: {user.Objetivo}, Lesiones:{user.Lesiones}, Peso:{user.Peso}, Altura:{user.Altura}";
             string respuesta = await _iaService.ObtenerRespuesta(pregunta, contexto);
 
             // Guardar el mensaje vinculado a esa conversación

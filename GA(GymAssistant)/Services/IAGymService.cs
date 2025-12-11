@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using Google.GenAI;
+using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -6,16 +8,15 @@ namespace GA_GymAssistant.Services
 {
     public class IAGymService
     {
-        private readonly HttpClient _httpClient;
+        //private readonly HttpClient _httpClient;
         private readonly string _apiKey;
-        private const string MODELO = "gemini-1.5-flash";
+        private const string MODELO = "gemini-2.5-flash";
 
         // TU CLAVE API (Pégala aquí si no está en appsettings)
-        private const string API_KEY_RESPALDO = "AIzaSyA2pg0dPzFkXpOeBpEL1b683-OTQB0HVPs";
+        private const string API_KEY_RESPALDO = "AIzaSyDF8sim89B-Et60hqlbFKkKEK7efoO8AyE";
 
         public IAGymService(HttpClient httpClient, IConfiguration configuration)
         {
-            _httpClient = httpClient;
             var keyConfig = configuration["Gemini:ApiKey"];
             _apiKey = !string.IsNullOrEmpty(keyConfig) ? keyConfig : API_KEY_RESPALDO;
         }
@@ -25,7 +26,9 @@ namespace GA_GymAssistant.Services
             var url = $"https://generativelanguage.googleapis.com/v1beta/models/{MODELO}:generateContent?key={_apiKey}";
 
             // Le damos personalidad al chat
-            var prompt = $"Actúa como un entrenador personal experto, motivador y conciso. Contexto del usuario: {contextoUsuario}. Pregunta: {preguntaUsuario}";
+            var prompt = $"Actúa como un entrenador personal experto, motivador y conciso. " +
+                $"Contexto del usuario: {contextoUsuario}. " +
+                $"Pregunta: {preguntaUsuario}";
 
             var requestBody = new
             {
@@ -36,6 +39,9 @@ namespace GA_GymAssistant.Services
 
             try
             {
+                HttpClient _httpClient = new HttpClient();
+                _httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Linux; Android 16; Pixel 9) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.12.45 Mobile Safari/537.36");
+
                 var response = await _httpClient.PostAsync(url, jsonContent);
 
                 if (!response.IsSuccessStatusCode) return "Lo siento, tuve un problema de conexión. Intenta de nuevo.";
@@ -44,10 +50,10 @@ namespace GA_GymAssistant.Services
                 var jsonNode = JsonNode.Parse(result);
 
                 // Extraer solo el texto de la respuesta
-                return jsonNode?["candidates"]?[0]?["content"]?["parts"]?[0]?["text"]?.ToString()
+                return jsonNode?["candidates"]?[0]?["content"]?["parts"]?[0]?["text"]?.ToString() + "</br></br></br></br></br></br></br>"
                        ?? "No supe qué responder.";
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return "Ocurrió un error al procesar tu consulta.";
             }

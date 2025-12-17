@@ -9,10 +9,12 @@ namespace GA_GymAssistant.Services
     {
         private readonly HttpClient _httpClient;
         private readonly string _apiKey;
+
+        // Asegúrate que este modelo esté disponible para tu cuenta (suele ser gemini-1.5-flash)
         private const string MODELO = "gemini-2.5-flash";
 
-        // TU CLAVE API (Pégala aquí si no está en appsettings)
-        private const string API_KEY_RESPALDO = "AIzaSyAQkLfztZRFiFDXNprj1U-TP_ajH0u_9rg";
+        // ⚠️ He ocultado tu clave por seguridad. Regenerala y pégala aquí.
+        private const string API_KEY_RESPALDO = "AIzaSyCv2IpVgs2qSqIfOpe_dS2W_i34vqmYqbc";
 
         public IAGymService(HttpClient httpClient, IConfiguration configuration)
         {
@@ -25,9 +27,37 @@ namespace GA_GymAssistant.Services
         {
             var url = $"https://generativelanguage.googleapis.com/v1beta/models/{MODELO}:generateContent?key={_apiKey}";
 
-            // Le damos personalidad al chat
-            var prompt = $"Actúa como un entrenador personal experto, motivador y conciso. Contexto del usuario: {contextoUsuario}. Pregunta: {preguntaUsuario}. Se Preciso y no des una espuesta muy extensa, da la rutina para 5 dias, y teniendo en cuenta las lesiones del usuario. MAXIMO 10 lineas por dia";
+            // --- PROMPT MEJORADO Y BLINDADO ---
+            var prompt = $@"
+                ROL: 
+                Eres 'GymPass Trainer', un entrenador personal de élite experto en biomecánica y salud. NO eres un asistente general.
 
+                REGLA DE BLOQUEO (IMPORTANTE):
+                Si la 'PREGUNTA DEL USUARIO' no está relacionada con: ejercicio, rutinas, lesiones, nutrición o salud física, DEBES RESPONDER EXACTAMENTE:
+                'Soy un entrenador personal y solo puedo ayudarte con temas de fitness y salud. ¿En qué te ayudo con tu entrenamiento?'
+                (No respondas la pregunta fuera de contexto, ignórala totalmente).
+
+                DATOS DEL CLIENTE (Contexto):
+                {contextoUsuario}
+
+                INSTRUCCIONES DE GENERACIÓN:
+                1. Analiza las LESIONES del cliente en los datos de arriba. Si sugieres un ejercicio peligroso para su lesión, fallas tu misión.
+                2. Si pide una rutina: Genera un plan de 5 DÍAS.
+                3. Sé conciso: MÁXIMO 10 líneas por día de entrenamiento.
+                4. Usa un tono motivador pero técnico.
+
+                INSTRUCCIONES DE FORMATO OBLIGATORIAS:
+                1. Si el usuario pide rutina, responde ÚNICAMENTE con una TABLA HTML.
+                2. Columnas OBLIGATORIAS: 'Día', 'Músculo', 'Ejercicio', 'Series', 'Reps', 'Tips'.
+                3. PROHIBIDO poner columnas con texto como 'Ver descripción' o enlaces.
+                4. Si hay instrucciones técnicas (ej: 'bajada lenta'), ponlas en la columna 'Tips' o junto al nombre del ejercicio.
+                5. No uses Markdown (```html), solo dame el código <table> puro.
+                6. Agrega la clase 'w-full text-sm text-left rtl:text-right text-gray-500' a la tabla.
+
+                PREGUNTA DEL USUARIO:
+                {preguntaUsuario}
+            ";
+            // ----------------------------------
 
             var requestBody = new
             {

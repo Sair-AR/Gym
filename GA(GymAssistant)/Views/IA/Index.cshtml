@@ -16,91 +16,53 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
-        /* Scrollbar personalizada */
+        /* Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #1f2937; }
         ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
 
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
-        @@keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Estilos de Tabla */
+        /* Estilos Tabla en Chat (Modo Oscuro) */
         .rutina-content table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            margin-bottom: 10px;
-            background-color: #1f2937;
-            border-radius: 8px;
-            overflow: hidden;
-            font-size: 0.9rem;
+            width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 10px;
+            background-color: #1f2937; border-radius: 8px; overflow: hidden; font-size: 0.9rem;
         }
-        .rutina-content th {
-            background-color: #4f46e5;
-            color: white;
-            padding: 10px;
-            text-align: left;
-            font-weight: 600;
-        }
-        .rutina-content td {
-            padding: 10px;
-            border-bottom: 1px solid #374151;
-            color: #d1d5db;
-        }
+        .rutina-content th { background-color: #4f46e5; color: white; padding: 10px; text-align: left; }
+        .rutina-content td { padding: 10px; border-bottom: 1px solid #374151; color: #d1d5db; }
         .rutina-content tr:last-child td { border-bottom: none; }
-       /* ... tus otros estilos ... */
+        
+        /* ESTILOS PDF (Modo Nuclear: Forzar BLANCO Y NEGRO) */
+        .pdf-mode {
+            background-color: #ffffff !important;
+            padding: 20px !important;
+            font-family: sans-serif !important;
+        }
+        .pdf-mode * {
+            color: #000000 !important;
+            border-color: #000000 !important;
+        }
+        .pdf-mode table {
+            width: 100% !important; border-collapse: collapse !important;
+            background-color: #ffffff !important; margin-top: 20px !important;
+        }
+        .pdf-mode th {
+            background-color: #f3f4f6 !important; color: #000 !important;
+            border: 1px solid #000 !important; font-weight: bold !important; padding: 10px !important;
+        }
+        .pdf-mode td {
+            background-color: #fff !important; color: #000 !important;
+            border: 1px solid #000 !important; padding: 8px !important;
+        }
 
-    /* ESTILOS PARA IMPRESIÓN PDF (Modo Nuclear: Forzar todo a negro) */
-    .pdf-mode {
-        background-color: #ffffff !important;
-        padding: 40px !important;
-        font-family: sans-serif !important;
-    }
-
-    /* Forzar que TODO el texto dentro del PDF sea negro */
-    .pdf-mode * {
-        color: #000000 !important;
-        border-color: #000000 !important;
-    }
-
-    .pdf-mode table {
-        width: 100% !important;
-        border-collapse: collapse !important;
-        background-color: #ffffff !important;
-        color: #000000 !important;
-        margin-top: 20px !important;
-    }
-
-    .pdf-mode th {
-        background-color: #e5e7eb !important; /* Gris muy claro para encabezado */
-        color: #000000 !important;
-        border: 1px solid #000000 !important;
-        font-weight: bold !important;
-        padding: 12px !important;
-        text-transform: uppercase !important;
-        font-size: 12px !important;
-    }
-
-    .pdf-mode td {
-        background-color: #ffffff !important;
-        color: #000000 !important;
-        border: 1px solid #000000 !important; /* Borde negro sólido */
-        padding: 10px !important;
-        font-size: 11px !important;
-    }
-
-    /* Título del PDF */
-    .pdf-header {
-        text-align: center;
-        margin-bottom: 20px;
-        color: #000000 !important;
-    }
-    .pdf-header h2 { font-size: 24px; font-weight: bold; margin: 0; }
-    .pdf-header p { font-size: 14px; color: #444; }
+        /* Estilos Botones Selección */
+        .btn-part, .btn-material { transition: all 0.2s; }
+        .btn-part.selected, .btn-material.selected { 
+            background-color: #4f46e5; border-color: #6366f1; color: white; 
+            box-shadow: 0 0 10px rgba(79, 70, 229, 0.4);
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-100 font-sans overflow-hidden flex h-screen">
@@ -108,212 +70,217 @@
     <aside class="w-72 bg-[#0f1117] flex flex-col border-r border-gray-800 hidden md:flex z-20">
         <div class="p-4">
             <form asp-action="NuevaConversacion" method="post">
-                <button type="submit" class="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium py-3 px-4 rounded-full flex items-center gap-3 transition shadow-sm border border-gray-700 group">
-                    <div class="bg-gray-700 p-1 rounded-full group-hover:bg-gray-600"><i class="fa-solid fa-plus text-xs"></i></div>
-                    <span>Nueva conversación</span>
+                <button type="submit" class="w-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium py-3 px-4 rounded-full flex items-center gap-3 transition shadow-sm border border-gray-700">
+                    <div class="bg-gray-700 p-1 rounded-full"><i class="fa-solid fa-plus text-xs"></i></div>
+                    <span>Nueva Rutina</span>
                 </button>
             </form>
         </div>
-
         <div class="flex-1 overflow-y-auto px-2 space-y-1 py-2">
-            <div class="px-4 py-2 text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Tus Chats</div>
-            @if (historial != null && historial.Any())
-            {
-                foreach (var chat in historial)
-                {
+            <div class="px-4 py-2 text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Historial</div>
+            @if (historial != null && historial.Any()) {
+                foreach (var chat in historial) {
                     <div class="group relative flex items-center justify-between px-3 py-2 mb-1 rounded-lg transition @(currentChatId == chat.IdConversacion ? "bg-indigo-900/40 border-l-4 border-indigo-500" : "hover:bg-gray-800")">
-                        <a href="@Url.Action("Index", new { idConversacion = chat.IdConversacion })" class="flex-1 flex items-center gap-3 text-sm truncate mr-2 @(currentChatId == chat.IdConversacion ? "text-indigo-200 font-medium" : "text-gray-400 group-hover:text-gray-200")" title="@chat.Titulo">
-                            <i class="fa-regular fa-message text-xs"></i>
-                            <span class="truncate">@chat.Titulo</span>
-                        </a>
-                        <div class="relative group/menu">
-                            <button class="text-gray-500 hover:text-white opacity-0 group-hover:opacity-100 transition px-2 focus:opacity-100"><i class="fa-solid fa-ellipsis"></i></button>
-                            <div class="absolute right-0 top-6 hidden group-hover/menu:block w-28 bg-[#1f2937] border border-gray-700 rounded-lg shadow-xl z-50 overflow-hidden">
-                                <form asp-action="BorrarConversacion" method="post" onsubmit="return confirm('¿Eliminar este chat permanentemente?');">
-                                    <input type="hidden" name="idConversacion" value="@chat.IdConversacion" />
-                                    <button type="submit" class="flex items-center gap-2 w-full text-left px-3 py-2 text-xs text-red-400 hover:bg-gray-700 hover:text-red-300 transition">
-                                        <i class="fa-solid fa-trash-can"></i> Eliminar
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
+                        <a href="@Url.Action("Index", new { idConversacion = chat.IdConversacion })" class="flex-1 truncate text-sm text-gray-400">@chat.Titulo</a>
+                        <form asp-action="BorrarConversacion" method="post" class="hidden group-hover:block" onsubmit="return confirm('¿Borrar chat?');">
+                            <input type="hidden" name="idConversacion" value="@chat.IdConversacion" />
+                            <button type="submit" class="text-red-400 hover:text-red-300 px-2"><i class="fa-solid fa-trash-can"></i></button>
+                        </form>
                     </div>
                 }
             }
-            else
-            {
-                <div class="text-center text-gray-600 text-xs p-4">No hay historial aún.</div>
-            }
         </div>
-
-        <div class="p-4 border-t border-gray-800 bg-[#0f1117]">
-             <div class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-800 transition group">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white shadow-lg">
-                        @User.Identity.Name?.Substring(0, 1).ToUpper()
-                    </div>
-                    <div class="flex flex-col">
-                        <span class="text-sm font-medium text-gray-200">@User.Identity.Name</span>
-                        <span class="text-[10px] text-green-500">● En línea</span>
-                    </div>
+        <div class="p-4 border-t border-gray-800 bg-[#0f1117] flex justify-between items-center">
+             <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-bold">
+                    @User.Identity.Name?.Substring(0, 1).ToUpper()
                 </div>
-                 <form asp-controller="Auth" asp-action="Logout" method="post">
-                    <button type="submit" title="Cerrar Sesión" class="text-gray-500 hover:text-red-400 transition">
-                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                    </button>
-                </form>
+                <span class="text-sm font-medium">@User.Identity.Name</span>
             </div>
+             <form asp-controller="Auth" asp-action="Logout" method="post">
+                <button class="text-gray-500 hover:text-red-400"><i class="fa-solid fa-power-off"></i></button>
+            </form>
         </div>
     </aside>
 
     <main class="flex-1 flex flex-col bg-gray-900 h-full relative overflow-hidden">
-        
-        <div class="md:hidden p-4 border-b border-gray-800 flex justify-between items-center bg-[#0f1117] flex-shrink-0">
+        <div class="md:hidden p-4 border-b border-gray-800 flex justify-between items-center bg-[#0f1117]">
             <h1 class="font-bold flex items-center gap-2"><i class="fa-solid fa-dumbbell text-indigo-500"></i> Gym AI</h1>
             <form asp-action="NuevaConversacion" method="post">
                 <button type="submit" class="text-indigo-400"><i class="fa-solid fa-plus-circle text-xl"></i></button>
             </form>
         </div>
 
-        <div id="chat-box" class="flex-1 overflow-y-auto p-4 md:p-10 space-y-8 scroll-smooth">
-            @if (Model != null && Model.Any())
-            {
-                foreach (var msg in Model)
-                {
+        <div id="chat-box" class="flex-1 overflow-y-auto p-4 md:p-10 space-y-8 pb-4 scroll-smooth">
+            @if (Model != null && Model.Any()) {
+                foreach (var msg in Model) {
                     <div class="flex justify-end fade-in">
-                        <div class="bg-[#2d3748] text-gray-100 px-6 py-4 rounded-2xl rounded-tr-sm max-w-2xl shadow-md border border-gray-700">
-                            <p class="text-sm md:text-base leading-relaxed">@msg.Pregunta</p>
+                        <div class="bg-[#2d3748] px-6 py-4 rounded-2xl rounded-tr-sm max-w-2xl border border-gray-700 shadow-md">
+                            <p class="text-sm text-gray-200">@msg.Pregunta</p>
                         </div>
                     </div>
-
                     <div class="flex justify-start gap-4 fade-in">
-                        <div class="w-8 h-8 rounded-full bg-indigo-600 flex-shrink-0 flex items-center justify-center shadow-lg shadow-indigo-500/20 mt-1">
-                            <i class="fa-solid fa-robot text-white text-xs"></i>
-                        </div>
-                        
+                        <div class="w-8 h-8 rounded-full bg-indigo-600 flex-shrink-0 flex items-center justify-center mt-1 shadow-lg shadow-indigo-500/20"><i class="fa-solid fa-robot text-xs"></i></div>
                         <div class="flex flex-col w-full max-w-3xl">
-                            <div class="text-gray-300 leading-relaxed text-sm md:text-base rutina-content">
-    @Html.Raw(msg.Respuesta)
-</div>
-
-                            @if (msg.Respuesta.Contains("<table"))
-                            {
+                            <div class="text-gray-300 text-sm rutina-content leading-relaxed">
+                                @Html.Raw(msg.Respuesta)
+                            </div>
+                            @if (msg.Respuesta.Contains("<table")) {
                                 <div class="mt-3">
-                                    <button onclick="descargarPDF(this)" class="flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white text-xs font-bold py-2 px-4 rounded-full transition shadow-lg transform hover:scale-105">
-                                        <i class="fa-solid fa-file-pdf"></i> Descargar Rutina PDF
+                                    <button onclick="descargarPDF(this)" class="bg-red-600 hover:bg-red-500 text-white text-xs font-bold py-2 px-4 rounded-full transition shadow-lg flex items-center gap-2">
+                                        <i class="fa-solid fa-file-pdf"></i> Descargar PDF
                                     </button>
                                 </div>
                             }
                         </div>
                     </div>
                 }
-            }
-            else
-            {
-                 <div class="h-full flex flex-col items-center justify-center text-center opacity-90 fade-in pb-20">
-                    <div class="w-20 h-20 bg-gray-800 rounded-3xl flex items-center justify-center mb-6 shadow-2xl border border-gray-700 rotate-6 transition hover:rotate-0">
-                        <i class="fa-solid fa-brain text-4xl text-indigo-400"></i>
-                    </div>
-                    <h2 class="text-3xl md:text-4xl font-bold mb-3 text-white">Hola, @User.Identity.Name</h2>
-                    <p class="text-gray-400 text-lg mb-8 max-w-md">Soy tu entrenador personal. ¿En qué trabajamos hoy?</p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl px-6">
-                        <button onclick="enviarTexto('Dame una rutina de fuerza de 4 días')" class="p-4 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-indigo-500 rounded-xl text-left transition group">
-                            <span class="block text-indigo-400 font-bold mb-1 group-hover:text-indigo-300">🏋️ Rutina de Fuerza</span>
-                            <span class="text-gray-500 text-xs group-hover:text-gray-300">Plan de 4 días para hipertrofia</span>
-                        </button>
-                         <button onclick="enviarTexto('¿Qué comer para perder grasa?')" class="p-4 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-indigo-500 rounded-xl text-left transition group">
-                            <span class="block text-green-400 font-bold mb-1 group-hover:text-green-300">🥗 Nutrición</span>
-                            <span class="text-gray-500 text-xs group-hover:text-gray-300">Consejos para déficit calórico</span>
-                        </button>
-                    </div>
+            } else {
+                <div class="h-full flex flex-col items-center justify-center opacity-60">
+                    <i class="fa-solid fa-dumbbell text-6xl text-gray-700 mb-4"></i>
+                    <h2 class="text-2xl font-bold text-gray-500">Configura tu rutina perfecta</h2>
+                    <p class="text-sm text-gray-600 mt-2">Usa el panel inferior para comenzar</p>
                 </div>
             }
         </div>
 
-        <div class="w-full bg-gray-900 border-t border-gray-800 pt-4 pb-6 px-4 flex-shrink-0 z-10">
-            <div class="max-w-3xl mx-auto">
-                <form asp-action="Consultar" method="post" id="chatForm" class="relative group">
-                    <input type="hidden" name="idConversacion" value="@currentChatId" />
-                    <input id="input-pregunta" name="pregunta" autocomplete="off" required
-                           class="w-full bg-[#1f2937] text-white rounded-full py-4 pl-6 pr-14 focus:outline-none focus:ring-2 focus:ring-indigo-500 border border-gray-700 placeholder-gray-500 shadow-xl transition-all"
-                           placeholder="Escribe tu consulta sobre fitness..." />
-                    <button type="submit" id="btn-enviar" class="absolute right-2 top-2 p-2 bg-indigo-600 rounded-full hover:bg-indigo-500 text-white transition disabled:opacity-50 disabled:cursor-not-allowed">
-                        <i class="fa-solid fa-arrow-up"></i>
+        <div class="w-full bg-[#111827] border-t border-gray-800 p-4 flex-shrink-0 z-50 shadow-2xl">
+            <form asp-action="Consultar" method="post" id="chatForm" onsubmit="prepararPrompt(event)">
+                <input type="hidden" name="idConversacion" value="@currentChatId" />
+                <input type="hidden" id="input-pregunta" name="pregunta" required />
+
+                <div class="max-w-6xl mx-auto flex flex-col gap-4">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                        
+                        <div class="md:col-span-3 space-y-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-wide"><i class="fa-regular fa-calendar-days mr-1"></i> Frecuencia</label>
+                                <div class="relative">
+                                    <select id="diasSelect" class="w-full appearance-none bg-gray-800 border border-gray-700 text-white py-2 px-3 pr-8 rounded-lg text-sm focus:ring-indigo-500 font-bold cursor-pointer">
+                                        <option value="3">3 Días/sem</option>
+                                        <option value="4" selected>4 Días/sem</option>
+                                        <option value="5">5 Días/sem</option>
+                                        <option value="6">6 Días/sem</option>
+                                    </select>
+                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400"><i class="fa-solid fa-chevron-down text-xs"></i></div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-wide"><i class="fa-solid fa-bullseye mr-1"></i> Meta</label>
+                                <div class="relative">
+                                    <select id="objetivoSelect" class="w-full appearance-none bg-gray-800 border border-gray-700 text-white py-2 px-3 pr-8 rounded-lg text-sm focus:ring-indigo-500 font-bold text-indigo-300 cursor-pointer">
+                                        <option value="Ganar Músculo (Hipertrofia)" selected>💪 Ganar Músculo</option>
+                                        <option value="Perder Grasa (Definición)">🔥 Perder Grasa</option>
+                                        <option value="Ganar Fuerza">🏋️ Ganar Fuerza</option>
+                                        <option value="Resistencia / Cardio">🏃 Resistencia</option>
+                                    </select>
+                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400"><i class="fa-solid fa-chevron-down text-xs"></i></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="md:col-span-4">
+                            <label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-wide">
+                                <i class="fa-solid fa-layer-group mr-1"></i> Material
+                            </label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button type="button" onclick="toggleSingle(this, 'material')" data-value="Gimnasio Completo" class="btn-material selected py-2 px-2 rounded-lg bg-gray-800 text-gray-300 text-xs font-medium border border-gray-700 hover:bg-gray-700 text-center">🏢 Gym Completo</button>
+                                <button type="button" onclick="toggleSingle(this, 'material')" data-value="Mancuernas en Casa" class="btn-material py-2 px-2 rounded-lg bg-gray-800 text-gray-300 text-xs font-medium border border-gray-700 hover:bg-gray-700 text-center">🏠 Solo Mancuernas</button>
+                                <button type="button" onclick="toggleSingle(this, 'material')" data-value="Peso Corporal" class="btn-material py-2 px-2 rounded-lg bg-gray-800 text-gray-300 text-xs font-medium border border-gray-700 hover:bg-gray-700 text-center">🤸 Peso Corporal</button>
+                                <button type="button" onclick="toggleSingle(this, 'material')" data-value="Bandas Elásticas" class="btn-material py-2 px-2 rounded-lg bg-gray-800 text-gray-300 text-xs font-medium border border-gray-700 hover:bg-gray-700 text-center">🪢 Bandas</button>
+                            </div>
+                        </div>
+
+                        <div class="md:col-span-5">
+                            <label class="block text-[10px] font-bold text-gray-400 mb-2 uppercase tracking-wide">
+                                <i class="fa-solid fa-child-reaching mr-1"></i> Músculos (Selecciona varios)
+                            </label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button type="button" onclick="toggleMulti(this)" data-value="Pectoral" class="btn-part py-2 px-1 rounded-lg bg-gray-800 text-gray-300 text-xs font-medium border border-gray-700 hover:bg-gray-700">Pectoral</button>
+                                <button type="button" onclick="toggleMulti(this)" data-value="Espalda" class="btn-part py-2 px-1 rounded-lg bg-gray-800 text-gray-300 text-xs font-medium border border-gray-700 hover:bg-gray-700">Espalda</button>
+                                <button type="button" onclick="toggleMulti(this)" data-value="Pierna" class="btn-part py-2 px-1 rounded-lg bg-gray-800 text-gray-300 text-xs font-medium border border-gray-700 hover:bg-gray-700">Pierna</button>
+                                <button type="button" onclick="toggleMulti(this)" data-value="Hombro" class="btn-part py-2 px-1 rounded-lg bg-gray-800 text-gray-300 text-xs font-medium border border-gray-700 hover:bg-gray-700">Hombro</button>
+                                <button type="button" onclick="toggleMulti(this)" data-value="Brazo" class="btn-part py-2 px-1 rounded-lg bg-gray-800 text-gray-300 text-xs font-medium border border-gray-700 hover:bg-gray-700">Brazos</button>
+                                <button type="button" onclick="toggleMulti(this)" data-value="Abdomen" class="btn-part py-2 px-1 rounded-lg bg-gray-800 text-gray-300 text-xs font-medium border border-gray-700 hover:bg-gray-700">Abdomen</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btn-enviar" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-3 rounded-xl shadow-lg transition flex items-center justify-center gap-2 text-sm uppercase tracking-wider transform hover:scale-[1.01]">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Generar Rutina Personalizada
                     </button>
-                </form>
-                <p class="text-center text-[10px] text-gray-600 mt-3">
-                    Gym Assistant IA puede cometer errores. Consulta siempre a un profesional.
-                </p>
-            </div>
+                </div>
+            </form>
         </div>
     </main>
 
-   <script>
-    window.onload = function() { scrollToBottom(); };
+    <script>
+        window.onload = function() { var cb = document.getElementById("chat-box"); if(cb) cb.scrollTop = cb.scrollHeight; };
 
-    function scrollToBottom() {
-        var chatBox = document.getElementById("chat-box");
-        if(chatBox) chatBox.scrollTop = chatBox.scrollHeight;
-    }
+        // 1. Selección Múltiple (Músculos)
+        function toggleMulti(btn) { btn.classList.toggle('selected'); }
 
-    function enviarTexto(texto) {
-        document.getElementById('input-pregunta').value = texto;
-    }
-
-    document.getElementById('chatForm').addEventListener('submit', function() {
-        var btn = document.getElementById('btn-enviar');
-        var input = document.getElementById('input-pregunta');
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-        btn.disabled = true;
-        input.readonly = true;
-    });
-
-  // --- FUNCIÓN DE PDF CORREGIDA (SOLUCIÓN TEXTO INVISIBLE) ---
-    function descargarPDF(btn) {
-        // 1. Buscamos el contenedor del mensaje
-        var parentDiv = btn.closest('.flex-col');
-        var contentDiv = parentDiv.querySelector('.rutina-content');
-
-        // 2. Buscamos SOLAMENTE la tabla
-        var tableElement = contentDiv.querySelector('table');
-
-        if (tableElement) {
-            // Clonamos la tabla para no afectar el chat
-            var clone = tableElement.cloneNode(true);
-            
-            // 3. Eliminamos cualquier clase de Tailwind que pueda causar conflicto de colores
-            // (Esto borra clases como 'text-gray-300', etc.)
-            clone.querySelectorAll('*').forEach(el => {
-                el.className = ''; // Limpiamos clases
-            });
-
-            // 4. Creamos un contenedor bonito para el PDF
-            var wrapper = document.createElement('div');
-            wrapper.innerHTML = `
-                <div class="pdf-header">
-                    <h2>PLAN DE ENTRENAMIENTO</h2>
-                    <p>Generado por GymAssistant AI</p>
-                </div>
-            `;
-            wrapper.appendChild(clone);
-            
-            // Aplicamos la clase "Nuclear" para forzar estilos de impresión
-            wrapper.classList.add('pdf-mode'); 
-            
-            var opt = {
-                margin:       [0.5, 0.5],
-                filename:     'Mi_Rutina_GymAssistant.pdf',
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, logging: true }, 
-                jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
-            };
-
-            // Generamos el PDF
-            html2pdf().set(opt).from(wrapper).save();
-        } else {
-            alert("No se encontró una tabla válida para exportar.");
+        // 2. Selección Única (Material)
+        function toggleSingle(btn, group) {
+            document.querySelectorAll('.btn-' + group).forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
         }
-    }
-</script>
+
+        // 3. Preparar Texto para la IA
+        function prepararPrompt(e) {
+            var dias = document.getElementById('diasSelect').value;
+            var objetivo = document.getElementById('objetivoSelect').value;
+            
+            var materialBtn = document.querySelector('.btn-material.selected');
+            var material = materialBtn ? materialBtn.getAttribute('data-value') : "Lo que tenga disponible";
+
+            var partes = [];
+            document.querySelectorAll('.btn-part.selected').forEach(btn => partes.push(btn.getAttribute('data-value')));
+            var enfoque = partes.length > 0 ? partes.join(", ") : "Cuerpo Completo";
+
+            var promptFinal = `Hola. Genera una rutina de ${dias} días/semana.\nOBJETIVO: ${objetivo}.\nMATERIAL: ${material}.\nENFOQUE: ${enfoque}.\nRevisa mis lesiones.`;
+
+            document.getElementById('input-pregunta').value = promptFinal;
+            
+            var btn = document.getElementById('btn-enviar');
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> PROCESANDO...';
+            btn.disabled = true;
+        }
+
+        // 4. Descargar PDF (Modo Nuclear: Blanco y Negro forzado)
+        function descargarPDF(btn) {
+            var parentDiv = btn.closest('.flex-col');
+            var contentDiv = parentDiv.querySelector('.rutina-content');
+            var tableElement = contentDiv.querySelector('table');
+
+            if (tableElement) {
+                var clone = tableElement.cloneNode(true);
+                // Borrar clases de Tailwind para evitar conflictos
+                clone.querySelectorAll('*').forEach(el => el.className = '');
+
+                var wrapper = document.createElement('div');
+                wrapper.innerHTML = `
+                    <div style="text-align:center; margin-bottom:20px; font-family:sans-serif;">
+                        <h2 style="margin:0; font-size:24px;">PLAN DE ENTRENAMIENTO</h2>
+                        <p style="margin:5px; color:#555;">GymAssistant AI</p>
+                    </div>`;
+                wrapper.appendChild(clone);
+                wrapper.classList.add('pdf-mode'); // Aplica estilos CSS blanco/negro
+
+                var opt = {
+                    margin: 0.5,
+                    filename: 'Rutina_GymAssistant.pdf',
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2 },
+                    jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
+                };
+                html2pdf().set(opt).from(wrapper).save();
+            } else {
+                alert("No se encontró la tabla de rutina.");
+            }
+        }
+    </script>
 </body>
 </html>
